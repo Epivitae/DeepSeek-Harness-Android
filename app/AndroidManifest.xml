@@ -6,6 +6,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:label="@string/app_name"
@@ -28,5 +29,12 @@
             </intent-filter>
         </activity>
         <!-- Release build: no diagnostic activities; WebView remote debugging off. -->
+        <receiver
+            android:name=".NotifyReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="ai.deepseek.dshclient.NOTIFY" />
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>

@@ -292,7 +292,10 @@
     chat.running = !!chat.transcript.running;
     scheduleChatRender();
     if (ev.type === 'session/title') refreshHeader();
-    if (ev.type === 'turn/end') loadSessions(true);
+    if (ev.type === 'turn/end') {
+      notifyTurnEnd(ev);
+      loadSessions(true);
+    }
   }
 
   function handleAssistantFrame(value) {
@@ -472,7 +475,9 @@
   }
 
   function goHome() {
-    forceUnfollow();
+    var chat = state.chat;
+    var keepStream = !!(chat && chat.running && state.client && !state.mock);
+    if (!keepStream) forceUnfollow();
     setScreen('home');
     renderHome();
     loadSessions(true);
@@ -495,6 +500,32 @@
     }
     updateComposerChips();
     updateSendState();
+    syncTaskRunning(running);
+  }
+
+  function syncTaskRunning(running) {
+    var next = !!running;
+    if (window.__dshTaskRunning === next) return;
+    window.__dshTaskRunning = next;
+    nativeCall('setTaskRunning', next ? 'true' : 'false');
+  }
+
+  function notifyTurnEnd(ev) {
+    var chat = state.chat;
+    if (!chat) return;
+    var visible = nativeCall('isAppVisible');
+    var background = document.hidden || visible === 'false' || visible === false;
+    if (!background && state.screen === 'chat') return;
+    var reason = ev && ev.data && ev.data.reason ? ev.data.reason : null;
+    var kind = reason && reason.kind ? reason.kind : 'completed';
+    var title = kind === 'error' ? 'DSH 任务失败' : (kind === 'cancelled' ? 'DSH 任务已停止' : 'DSH 任务完成');
+    var name = chat.title || (chat.cwd ? basename(chat.cwd) : '对话');
+    var last = '';
+    for (var i = chat.items.length - 1; i >= 0; i--) {
+      if (chat.items[i].kind === 'assistant' && chat.items[i].text) { last = chat.items[i].text; break; }
+    }
+    last = oneLine(last, 70);
+    nativeCall('notify', title, name + (last ? '：' + last : ''));
   }
 
   function modelDisplay(selection) {

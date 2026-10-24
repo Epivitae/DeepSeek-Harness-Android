@@ -7,6 +7,7 @@ import android.content.ClipboardManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Insets;
 import android.graphics.Typeface;
@@ -93,6 +94,8 @@ public class MainActivity extends Activity {
     private WebView webView;
     private View splashView;
     private boolean pageReady;
+    private boolean taskRunning;
+    private boolean appVisible = true;
     private Bundle pendingWebState;
 
     // Setup screen widgets (null when the setup screen is not visible).
@@ -113,6 +116,7 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
+        NotifyCenter.ensureChannel(this);
         origin = prefs.getString(K_ORIGIN, null);
         token = prefs.getString(K_TOKEN, null);
         if (savedInstanceState != null && savedInstanceState.containsKey("webview")) {
@@ -190,6 +194,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        appVisible = true;
         if (webView != null) {
             webView.onResume();
             if (pageReady) {
@@ -202,8 +207,15 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onPause() {
+        appVisible = false;
         if (webView != null) {
-            webView.onPause();
+            if (taskRunning) {
+                // Keep JS + the Remote-mux WebSocket alive while a turn is
+                // running so the completion notification can still fire.
+                webView.resumeTimers();
+            } else {
+                webView.onPause();
+            }
         }
         super.onPause();
     }
@@ -792,6 +804,18 @@ public class MainActivity extends Activity {
         }
     }
 
+    /** Ask for the Android 13+ notification permission once the UI is ready. */
+    private void maybeRequestNotificationPermission() {
+        if (Build.VERSION.SDK_INT < 33) return;
+        try {
+            if (checkSelfPermission("android.permission.POST_NOTIFICATIONS")
+                    == PackageManager.PERMISSION_GRANTED) return;
+            requestPermissions(new String[]{"android.permission.POST_NOTIFICATIONS"}, 1001);
+        } catch (Exception e) {
+            Log.w(TAG, "notification permission request failed", e);
+        }
+    }
+
     // ------------------------------------------------------------------- back
 
     @Override
@@ -868,6 +892,7 @@ public class MainActivity extends Activity {
                 public void run() {
                     pageReady = true;
                     hideSplash();
+                    maybeRequestNotificationPermission();
                     Log.i(TAG, "pageReady from UI");
                 }
             });
@@ -917,6 +942,41 @@ public class MainActivity extends Activity {
                     }
                 }
             });
+        }
+
+        @JavascriptInterface
+        public void notify(String title, String body) {
+            final String t = title;
+            final String b = body;
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    NotifyCenter.post(MainActivity.this, t, b);
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public void notify(String title, String body, String ignored) {
+            notify(title, body);
+        }
+
+        @JavascriptInterface
+        public String isAppVisible() {
+            return appVisible ? "true" : "false";
+        }
+
+        @JavascriptInterface
+        public String isAppVisible(String ignoredA, String ignoredB) {
+            return appVisible ? "true" : "false";
+        }
+
+        @JavascriptInterface
+        public void setTaskRunning(String running, String ignored) {
+            taskRunning = "true".equals(running) || "1".equals(running);
+            if (taskRunning && webView != null) {
+                webView.resumeTimers();
+            }
         }
 
         @JavascriptInterface

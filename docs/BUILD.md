@@ -22,7 +22,7 @@ requests), then produces:
 | output | signing | notes |
 |---|---|---|
 | `dist/dsh-client-debug.apk` | debug | `debuggable`, ships `ProofActivity`, enables the adb automation hook and WebView CDP |
-| `dist/DSH-Client-1.0.0.apk` | release | universal APK, deliverable for the Honor phone; no diagnostic activity, not debuggable, WebView CDP gated off |
+| `dist/DSH-Client-1.1.0.apk` | release | universal APK, deliverable for the Honor phone; no diagnostic activity, not debuggable, WebView CDP gated off |
 
 The two builds differ only by manifest (`app/AndroidManifest.xml` vs
 `app/AndroidManifest-debug.xml`) and signing key. The release manifest declares just
@@ -31,7 +31,7 @@ and a diagnostic `ProofActivity` used for local WebView capability checks.
 
 Signing details: [app/SIGNING.md](../app/SIGNING.md). The debug APK is Android's
 standard debug key; the release APK is signed with a stable project keystore.
-Both are `minSdk 24`, `targetSdk 31`, versionName `1.0.0` / versionCode `1`.
+Both are `minSdk 24`, `targetSdk 31`, versionName `1.1.0` / versionCode `1`.
 
 ## Verification
 
@@ -47,13 +47,13 @@ frames (`tools/fixtures/`) are gitignored; they can be regenerated locally.
 
 ## Install on the Honor phone (target device)
 
-1. **Transfer the APK**: copy `dist/DSH-Client-1.0.0.apk` to the phone (USB/MTP,
+1. **Transfer the APK**: copy `dist/DSH-Client-1.1.0.apk` to the phone (USB/MTP,
    `adb push`, cloud drive, Tailscale file transfer, ...).
 2. **Allow install from unknown sources** for the app doing the install
    (Files/Chrome): Settings → Security → Install unknown apps → allow.
 3. **Install** by tapping the APK. Or over USB with adb:
    ```bash
-   adb install dist/DSH-Client-1.0.0.apk
+   adb install dist/DSH-Client-1.1.0.apk
    ```
 4. Open **DSH**. The native dark setup screen asks for the server URL and token:
    - paste the whole URL printed by `dsh web` (`http://…:3080/?token=…`) into the

@@ -58,6 +58,7 @@ Android 客户端。自绘的移动端界面，直接使用 DSH 官方的 HTTP /
 - **新对话**：选择工作目录（记住最近使用的目录），首条消息发出时才创建会话，不产生空会话。
 - **模型选择**：按会话切换模型与推理强度（读取服务器 `session/modelCatalog`）。
 - **重命名**、**断线自动重连**（指数退避，重连后自动恢复订阅）、**令牌失效提示**。
+- **任务通知**：长任务运行期间离开对话页或切到后台，任务结束时通过 Android 通知栏提醒（点击回到 App）。
 - **界面**：深色、低对比度、大圆角、系统字体；手机竖屏单栏，横屏 / 平板自动双栏；支持安全区、刘海与输入法。
 - **零第三方 SDK / 零广告 / 零埋点**，只申请网络权限。
 
@@ -84,9 +85,9 @@ dsh web: https://<machine>.<tailnet>.ts.net:3080/?token=XXXXXXXX
 
 ### 2. 安装 APK
 
-- 文件：`dist/DSH-Client-1.0.0.apk`（`dist/dsh-client-debug.apk` 为调试版）
+- 文件：`dist/DSH-Client-1.1.0.apk`（`dist/dsh-client-debug.apk` 为调试版）
 - 传到荣耀手机（数据线、网盘、微信文件传输均可），在「设置 → 安全 → 安装未知应用」中允许安装。
-- 或使用 adb：`adb install -r dist/DSH-Client-1.0.0.apk`
+- 或使用 adb：`adb install -r dist/DSH-Client-1.1.0.apk`
 - 无线调试（Android 11+）：开发者选项里打开「无线调试」，`adb pair <手机IP>:<配对端口> <配对码>`
   后 `adb connect <手机IP>:<调试端口>` 即可安装（该流程已在荣耀 50 上验证）。
 
@@ -174,7 +175,7 @@ node tools/test-live.mjs            # 需要 dev-proxy，会创建/订阅测试�
 
 # 3. 构建 APK（需要 Debian Android SDK platform 31 / build-tools 31，JDK 17）
 bash tools/build-apk.sh             # -> dist/dsh-client-debug.apk
-bash tools/build-apk.sh --release   # -> dist/DSH-Client-1.0.0.apk（签名见 docs/BUILD.md）
+bash tools/build-apk.sh --release   # -> dist/DSH-Client-1.1.0.apk（签名见 docs/BUILD.md）
 ```
 
 开发只改 `web/` 与 `app/`，不要改 `app/assets/ui/`（构建产物）。详细工具链、签名和装机步骤见
@@ -199,6 +200,7 @@ bash tools/build-apk.sh --release   # -> dist/DSH-Client-1.0.0.apk（签名见 d
   策略下无审批弹窗，但提问会等待输入）；后续版本会补上问题卡片。
 - 子 Agent（subagent）/ Agent Team、计划模式等 UI 未单独展示，但会以工具调用的形式出现在对话里。
 - 历史消息首屏加载 40 条，向上滚动时按需加载更早内容。
+- 任务完成通知依赖系统对 WebView 后台运行的宽容度：App 被系统回收或用户强行停止后不会通知；长任务建议保留在最近任务中。该功能不使用任何推送服务/账号。
 - 不支持在手机本地运行 DSH 引擎（需要电脑上常驻 `dsh web`；本地运行可参考上面的社区项目）。
 - 需要 Android 7.0+ 且系统 WebView 可用（荣耀 / 华为自带 WebView 已实测）。
 

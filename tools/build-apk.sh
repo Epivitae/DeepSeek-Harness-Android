@@ -5,7 +5,7 @@
 #
 # Outputs:
 #   dist/dsh-client-debug.apk    debug-signed (debuggable; automation hooks on)
-#   dist/DSH-Client-1.0.0.apk    release-signed universal APK (deliverable)
+#   dist/DSH-Client-1.1.0.apk    release-signed universal APK (deliverable)
 #
 # Pipeline: bundle HTML assets -> aapt2 compile -> aapt2 link (release +
 # debug manifest) -> javac (Java 8 bytecode) -> d8 -> add classes.dex ->
@@ -35,9 +35,9 @@ RELEASE_KEY_PASS="${DSH_RELEASE_KEY_PASS:-dshclient}"
 
 MIN_SDK=24
 TARGET_SDK=31
-VERSION_CODE=1
-VERSION_NAME="1.0.0"
-DEBUG_VERSION_NAME="1.0.0-debug"
+VERSION_CODE=2
+VERSION_NAME="1.1.0"
+DEBUG_VERSION_NAME="1.1.0-debug"
 
 say() { printf '\n\033[1;34m==> %s\033[0m\n' "$*"; }
 die() { printf '\033[1;31mERROR: %s\033[0m\n' "$*" >&2; exit 1; }
