@@ -1,5 +1,7 @@
 # DSH Mobile — DeepSeek Harness 安卓客户端
 
+<img src="docs/icon.png" width="88" alt="DSH icon">
+
 > 仓库：<https://github.com/Epivitae/DeepSeek-Harness-Android> ·
 > 安装包见 [Releases](https://github.com/Epivitae/DeepSeek-Harness-Android/releases)。
 
