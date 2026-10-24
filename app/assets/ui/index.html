@@ -1188,6 +1188,7 @@ textarea.field { resize: none; line-height: 1.55; }
   <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.8" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="m16 16 4.2 4.2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
   <symbol id="i-message" viewBox="0 0 24 24"><path d="M20.5 12c0 4.4-3.8 8-8.5 8-1 0-2-.2-2.9-.5L4 21l1.5-4.2A7.7 7.7 0 0 1 3.5 12c0-4.4 3.8-8 8.5-8s8.5 3.6 8.5 8Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
   <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3.5c.5 4.7 3.3 7.5 8 8-4.7.5-7.5 3.3-8 8-.5-4.7-3.3-7.5-8-8 4.7-.5 7.5-3.3 8-8Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+  <symbol id="i-type" viewBox="0 0 24 24"><path d="M4 7V4h16v3M9 20h6M12 4v16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13.2 3 5.5 13.4h5.3L10.8 21l7.7-10.4h-5.3L13.2 3Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
 </svg>
 
@@ -4148,6 +4149,51 @@ textarea.field { resize: none; line-height: 1.55; }
     renderSettings();
   }
 
+  function currentTextZoom() {
+    var z = nativeCall('getTextZoom');
+    var n = parseInt(z, 10);
+    if (!n || n < 80 || n > 150) n = 110;
+    return n;
+  }
+
+  function fontLabel(zoom) {
+    var map = { 100: '小', 110: '标准', 120: '大', 130: '特大' };
+    return map[zoom] || (zoom + '%');
+  }
+
+  function openFontSheet() {
+    var current = currentTextZoom();
+    var options = [
+      { value: 100, label: '小', desc: '更紧凑，一屏显示更多内容' },
+      { value: 110, label: '标准', desc: '默认，比旧版本略大' },
+      { value: 120, label: '大', desc: '更易阅读' },
+      { value: 130, label: '特大', desc: '适合远距离 / 视力不便时' }
+    ];
+    var rows = options.map(function (o) {
+      return '<button class="sheet-item" data-zoom="' + o.value + '" data-active="' + (current === o.value ? '1' : '0') + '">' +
+        '<span class="sheet-item-icon">' + icon('type') + '</span>' +
+        '<span class="sheet-item-copy"><span class="sheet-item-title">' + esc(o.label) + '</span><span class="sheet-item-sub">' + esc(o.desc) + '</span></span>' +
+        '<span class="sheet-check"' + (current === o.value ? '' : ' hidden') + '>' + icon('check') + '</span></button>';
+    }).join('');
+    openSheet(sheetHeader('字体大小', '仅影响 DSH App 的界面文字，立即生效。') +
+      '<div class="sheet-list">' + rows + '</div>', {
+      onMount: function (root) {
+        $all('[data-zoom]', root).forEach(function (el) {
+          el.addEventListener('click', function () {
+            var value = parseInt(el.getAttribute('data-zoom'), 10);
+            var ok = nativeCall('setTextZoom', String(value));
+            if (ok === null || ok === false) { toast('当前环境不支持调整字体'); return; }
+            closeSheet();
+            var label = fontLabel(value);
+            var v = $('#set-font-value');
+            if (v) v.textContent = label;
+            toast('字体大小：' + label);
+          });
+        });
+      }
+    });
+  }
+
   function renderSettings() {
     if (!dom.settingsBody) return;
     var connMap = { connecting: '连接中', connected: '已连接', reconnecting: '重连中', offline: '未连接' };
@@ -4159,6 +4205,9 @@ textarea.field { resize: none; line-height: 1.55; }
       '<div class="settings-row"><span class="settings-row-label">状态</span><span class="settings-row-value">' + esc(connMap[state.connection] || state.connection) + '</span></div>' +
       '<button class="settings-row" id="set-reconnect"><span class="settings-row-label" style="color:var(--accent)">重新连接</span><span class="settings-row-value">›</span></button>' +
       '</div><div class="settings-note">令牌由系统安全存储，不会显示在这里。连接失败时请回到电脑上查看 <span class="settings-row-value" style="display:inline">dsh web</span> 打印的新链接。</div></div>' +
+      '<div class="settings-group"><div class="settings-group-title">显示</div><div class="settings-card">' +
+      '<button class="settings-row" id="set-font"><span class="settings-row-label">字体大小</span><span class="settings-row-value" id="set-font-value">' + esc(fontLabel(currentTextZoom())) + '</span></button>' +
+      '</div><div class="settings-note">字体大小保存在本机，调整后立即生效。</div></div>' +
       '<div class="settings-group"><div class="settings-group-title">会话</div><div class="settings-card">' +
       '<button class="settings-row" id="set-refresh"><span class="settings-row-label">立即刷新会话列表</span><span class="settings-row-value">' + state.sessions.length + ' 个</span></button>' +
       '<button class="settings-row settings-row-danger" id="set-reset"><span class="settings-row-label">更换服务器 / 重新登录</span><span class="settings-row-value">›</span></button>' +
@@ -4172,6 +4221,8 @@ textarea.field { resize: none; line-height: 1.55; }
     if (reconnect) reconnect.addEventListener('click', function () {
       if (state.client) { try { state.client.connect(); } catch (e) {} toast('正在重新连接…'); }
     });
+    var font = $('#set-font');
+    if (font) font.addEventListener('click', openFontSheet);
     var refresh = $('#set-refresh');
     if (refresh) refresh.addEventListener('click', function () { loadSessions(); toast('正在刷新…'); });
     var reset = $('#set-reset');

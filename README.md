@@ -61,6 +61,7 @@ Android 客户端。自绘的移动端界面，直接使用 DSH 官方的 HTTP /
 - **模型选择**：按会话切换模型与推理强度（读取服务器 `session/modelCatalog`）。
 - **重命名**、**断线自动重连**（指数退避，重连后自动恢复订阅）、**令牌失效提示**。
 - **任务通知**：长任务运行期间离开对话页或切到后台，任务结束时通过 Android 通知栏提醒（点击回到 App）。
+- **字体大小可调**：设置里提供 小 / 标准 / 大 / 特大 四档，默认比旧版更大，调整立即生效并保存在本机。
 - **界面**：深色、低对比度、大圆角、系统字体；手机竖屏单栏，横屏 / 平板自动双栏；支持安全区、刘海与输入法。
 - **零第三方 SDK / 零广告 / 零埋点**，只申请网络权限。
 
@@ -87,9 +88,9 @@ dsh web: https://<machine>.<tailnet>.ts.net:3080/?token=XXXXXXXX
 
 ### 2. 安装 APK
 
-- 文件：`dist/DSH-Client-1.2.0.apk`（`dist/dsh-client-debug.apk` 为调试版）
+- 文件：`dist/DSH-Client-1.2.1.apk`（`dist/dsh-client-debug.apk` 为调试版）
 - 传到荣耀手机（数据线、网盘、微信文件传输均可），在「设置 → 安全 → 安装未知应用」中允许安装。
-- 或使用 adb：`adb install -r dist/DSH-Client-1.2.0.apk`
+- 或使用 adb：`adb install -r dist/DSH-Client-1.2.1.apk`
 - 无线调试（Android 11+）：开发者选项里打开「无线调试」，`adb pair <手机IP>:<配对端口> <配对码>`
   后 `adb connect <手机IP>:<调试端口>` 即可安装（该流程已在荣耀 50 上验证）。
 
@@ -178,7 +179,7 @@ node tools/test-live.mjs            # 需要 dev-proxy，会创建/订阅测试�
 
 # 3. 构建 APK（需要 Debian Android SDK platform 31 / build-tools 31，JDK 17）
 bash tools/build-apk.sh             # -> dist/dsh-client-debug.apk
-bash tools/build-apk.sh --release   # -> dist/DSH-Client-1.2.0.apk（签名见 docs/BUILD.md）
+bash tools/build-apk.sh --release   # -> dist/DSH-Client-1.2.1.apk（签名见 docs/BUILD.md）
 ```
 
 开发只改 `web/` 与 `app/`，不要改 `app/assets/ui/`（构建产物）。详细工具链、签名和装机步骤见

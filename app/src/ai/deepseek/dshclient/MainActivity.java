@@ -78,6 +78,7 @@ public class MainActivity extends Activity {
     private static final String K_PRIMARY = "primary";
     private static final String K_FALLBACK = "fallback";
     private static final String K_ACTIVE = "active";
+    private static final String K_TEXT_ZOOM = "text_zoom";
 
     private static final int C_BG = 0xFF0B0C0F;
     private static final int C_SURFACE = 0xFF161A21;
@@ -450,7 +451,10 @@ public class MainActivity extends Activity {
         settings.setSupportZoom(false);
         settings.setBuiltInZoomControls(false);
         settings.setDisplayZoomControls(false);
-        settings.setTextZoom(100);
+        int textZoom = prefs.getInt(K_TEXT_ZOOM, 110);
+        if (textZoom < 80) textZoom = 80;
+        if (textZoom > 150) textZoom = 150;
+        settings.setTextZoom(textZoom);
         settings.setUseWideViewPort(true);
         settings.setLoadWithOverviewMode(false);
         settings.setMediaPlaybackRequiresUserGesture(false);
@@ -1048,6 +1052,46 @@ public class MainActivity extends Activity {
             if (taskRunning && webView != null) {
                 webView.resumeTimers();
             }
+        }
+
+        @JavascriptInterface
+        public String getTextZoom() {
+            return getTextZoom(null, null);
+        }
+
+        @JavascriptInterface
+        public String getTextZoom(String ignoredA, String ignoredB) {
+            try {
+                WebView view = webView;
+                int zoom = view == null ? prefs.getInt(K_TEXT_ZOOM, 110)
+                        : view.getSettings().getTextZoom();
+                return String.valueOf(zoom);
+            } catch (Exception e) {
+                return "110";
+            }
+        }
+
+        @JavascriptInterface
+        public String setTextZoom(String percent, String ignored) {
+            int zoom;
+            try {
+                zoom = Integer.parseInt(percent.trim());
+            } catch (Exception e) {
+                return "false";
+            }
+            if (zoom < 80) zoom = 80;
+            if (zoom > 150) zoom = 150;
+            final int value = zoom;
+            prefs.edit().putInt(K_TEXT_ZOOM, value).apply();
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (webView != null) {
+                        webView.getSettings().setTextZoom(value);
+                    }
+                }
+            });
+            return "true";
         }
 
         /**
