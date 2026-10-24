@@ -75,6 +75,9 @@ public class MainActivity extends Activity {
     private static final String PREFS = "dsh";
     private static final String K_ORIGIN = "origin";
     private static final String K_TOKEN = "token";
+    private static final String K_PRIMARY = "primary";
+    private static final String K_FALLBACK = "fallback";
+    private static final String K_ACTIVE = "active";
 
     private static final int C_BG = 0xFF0B0C0F;
     private static final int C_SURFACE = 0xFF161A21;
@@ -87,8 +90,14 @@ public class MainActivity extends Activity {
     private static final int C_ERROR = 0xFFFF6B6B;
 
     private SharedPreferences prefs;
+    /** Active server origin currently loaded in the WebView. */
     private String origin;
     private String token;
+    /** Configured primary (LAN) origin and optional Tailscale fallback. */
+    private String primaryOrigin;
+    private String fallbackOrigin;
+    private volatile boolean fallbackSwitching;
+    private long fallbackLastAttemptMs;
 
     private FrameLayout root;
     private WebView webView;
@@ -101,6 +110,7 @@ public class MainActivity extends Activity {
     // Setup screen widgets (null when the setup screen is not visible).
     private LinearLayout setupView;
     private EditText setupPrimary;
+    private EditText setupFallback;
     private EditText setupToken;
     private TextView setupStatus;
     private Button setupButton;
@@ -117,7 +127,10 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
         NotifyCenter.ensureChannel(this);
-        origin = prefs.getString(K_ORIGIN, null);
+        primaryOrigin = prefs.getString(K_PRIMARY, prefs.getString(K_ORIGIN, null));
+        fallbackOrigin = prefs.getString(K_FALLBACK, null);
+        if (fallbackOrigin != null && fallbackOrigin.trim().isEmpty()) fallbackOrigin = null;
+        origin = prefs.getString(K_ACTIVE, primaryOrigin);
         token = prefs.getString(K_TOKEN, null);
         if (savedInstanceState != null && savedInstanceState.containsKey("webview")) {
             pendingWebState = savedInstanceState;
@@ -132,9 +145,10 @@ public class MainActivity extends Activity {
             return;
         }
 
-        if (origin != null && !origin.isEmpty() && token != null && !token.isEmpty()) {
+        if (primaryOrigin != null && !primaryOrigin.isEmpty()
+                && token != null && !token.isEmpty()) {
             showLoadingOverlay("正在连接服务器… / Connecting…");
-            authAndLoad(origin, token, true);
+            authAndLoadBest(primaryOrigin, fallbackOrigin, token);
         } else {
             showSetup(null);
         }
@@ -170,12 +184,24 @@ public class MainActivity extends Activity {
         try {
             ServerAuth.Cfg cfg = ServerAuth.parseConfig(autoUrl,
                     intent.getStringExtra("dshAutoToken"));
+            String autoFallback = intent.getStringExtra("dshAutoFallback");
+            String fallback = null;
+            if (autoFallback != null && !autoFallback.trim().isEmpty()) {
+                try {
+                    fallback = ServerAuth.parseConfig(autoFallback, cfg.token).origin;
+                } catch (IllegalArgumentException ignored) {
+                    Log.w(TAG, "ignoring bad dshAutoFallback: " + autoFallback);
+                }
+            }
+            primaryOrigin = cfg.origin;
+            fallbackOrigin = fallback;
             origin = cfg.origin;
             token = cfg.token;
-            prefs.edit().putString(K_ORIGIN, cfg.origin).putString(K_TOKEN, cfg.token).apply();
-            Log.i(TAG, "auto-config from intent: " + cfg.origin);
+            saveConfig(cfg.origin, fallback, cfg.origin, cfg.token);
+            Log.i(TAG, "auto-config from intent: " + cfg.origin
+                    + (fallback == null ? "" : " fallback=" + fallback));
             showLoadingOverlay("正在连接服务器… / Connecting…");
-            authAndLoad(cfg.origin, cfg.token, true);
+            authAndLoadBest(cfg.origin, fallback, cfg.token);
             return true;
         } catch (IllegalArgumentException e) {
             Log.w(TAG, "bad dshAutoUrl: " + e.getMessage());
@@ -280,36 +306,82 @@ public class MainActivity extends Activity {
 
     // ---------------------------------------------------------------- auth flow
 
-    private void authAndLoad(final String orig, final String tok, final boolean fromStartup) {
+    /**
+     * Try the primary (LAN) origin first; when it is unreachable and a
+     * Tailscale fallback is configured, try that before surfacing an error.
+     */
+    private void authAndLoadBest(final String primary, final String fallback, final String tok) {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                final ServerAuth.Result result = ServerAuth.login(orig, tok);
+                final ServerAuth.Result primaryResult = ServerAuth.login(primary, tok);
+                ServerAuth.Result fallbackResult = null;
+                ServerAuth.Result result = primaryResult;
+                boolean usedFallback = false;
+                if (!primaryResult.ok && fallback != null && !fallback.isEmpty()
+                        && !fallback.equals(primary)) {
+                    Log.i(TAG, "primary failed, trying fallback " + fallback);
+                    fallbackResult = ServerAuth.login(fallback, tok);
+                    if (fallbackResult.ok) {
+                        result = fallbackResult;
+                        usedFallback = true;
+                    }
+                }
+                final ServerAuth.Result finalResult = result;
+                final ServerAuth.Result finalFallbackResult = fallbackResult;
+                final boolean finalUsedFallback = usedFallback;
+                final String finalFallback = fallback;
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if (result.ok) {
-                            origin = result.origin;
+                        if (finalResult.ok) {
+                            primaryOrigin = primary;
+                            fallbackOrigin = finalFallback;
+                            origin = finalResult.origin;
                             token = tok;
-                            prefs.edit().putString(K_ORIGIN, result.origin).putString(K_TOKEN, tok).apply();
-                            applyCookie(result.origin, result.cookie);
-                            loadApp(result.origin);
+                            saveConfig(primary, finalFallback, origin, tok);
+                            applyCookie(origin, finalResult.cookie);
+                            loadApp(origin);
+                            if (finalUsedFallback) {
+                                Toast.makeText(MainActivity.this,
+                                        "内网连接失败，已切换到 Tailscale",
+                                        Toast.LENGTH_LONG).show();
+                            }
                         } else {
-                            Log.w(TAG, "auth failed: " + result.error);
-                            if (!fromStartup && setupView != null) {
+                            Log.w(TAG, "auth failed: " + finalResult.error);
+                            String message = finalResult.error == null ? "连接失败" : finalResult.error;
+                            if (finalFallbackResult != null) {
+                                message = "内网连接失败：" + primaryResult.error
+                                        + "\n\nTailscale 连接失败：" + finalFallbackResult.error;
+                            }
+                            if (setupView != null) {
                                 setSetupBusy(false);
-                                setupStatus.setTextColor(C_ERROR);
-                                setupStatus.setText(result.error + "\n\n"
-                                        + "提示：令牌由终端里的 dsh web 启动日志打印，"
-                                        + "重启 dsh web 后令牌会变化。");
+                                showSetupMessage(message + "\n提示：令牌由终端里的 dsh web "
+                                        + "启动日志打印，重启 dsh web 后令牌会变化。", true);
                             } else {
-                                showSetup(result.error);
+                                showSetup(message);
                             }
                         }
                     }
                 });
             }
-        }, "dsh-auth").start();
+        }, "dsh-auth-best").start();
+    }
+
+    private void saveConfig(String primary, String fallback, String active, String tok) {
+        prefs.edit()
+                .putString(K_PRIMARY, primary)
+                .putString(K_FALLBACK, fallback == null ? "" : fallback)
+                .putString(K_ACTIVE, active)
+                .putString(K_ORIGIN, active)
+                .putString(K_TOKEN, tok)
+                .apply();
+    }
+
+    /** Parse an optional fallback address (URL or host[:port]). */
+    private String fallbackOriginFromInput(String input, String tok) {
+        if (input == null || input.trim().isEmpty()) return null;
+        return ServerAuth.parseConfig(input, tok).origin;
     }
 
     private void applyCookie(String baseOrigin, String cookie) {
@@ -341,6 +413,7 @@ public class MainActivity extends Activity {
         setupStatus = null;
         setupButton = null;
         setupPrimary = null;
+        setupFallback = null;
         setupToken = null;
         showLoadingOverlay("正在加载界面… / Loading…");
 
@@ -465,10 +538,20 @@ public class MainActivity extends Activity {
                 "http://192.168.1.10:3080 或 https://<machine>.<tailnet>.ts.net:3080/?token=…",
                 InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
         setupPrimary.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_NEXT);
-        if (origin != null) {
+        if (primaryOrigin != null) {
+            setupPrimary.setText(primaryOrigin);
+        } else if (origin != null) {
             setupPrimary.setText(origin);
         }
-        box.addView(labeledField("服务器地址 / SERVER URL", setupPrimary));
+        box.addView(labeledField("内网地址 / PRIMARY URL", setupPrimary));
+
+        setupFallback = field("可选：https://<machine>.<tailnet>.ts.net:3080",
+                InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
+        setupFallback.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_NEXT);
+        if (fallbackOrigin != null) {
+            setupFallback.setText(fallbackOrigin);
+        }
+        box.addView(labeledField("Tailscale 地址 / FALLBACK URL（可选）", setupFallback));
 
         setupToken = field("粘贴令牌（?token= 后面的部分）",
                 InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
@@ -476,10 +559,11 @@ public class MainActivity extends Activity {
         box.addView(labeledField("令牌 / TOKEN", setupToken));
 
         TextView hint = new TextView(this);
-        hint.setText("提示：在电脑上运行 dsh web，把打印出来的完整 URL 粘贴到上面，"
-                + "令牌会自动解析；服务器地址也可只填 192.168.1.10:3080。\n"
-                + "Tip: paste the full dsh web URL (…/?token=…) — the token is parsed "
-                + "automatically. Use Paste from the clipboard.");
+        hint.setText("提示：主地址填内网 http://192.168.1.10:3080；Tailscale 地址选填"
+                + "（如 https://<machine>.<tailnet>.ts.net:3080），内网连不上时会自动切换。"
+                + "令牌会自动解析。\n"
+                + "Tip: primary = LAN URL, fallback = Tailscale URL (optional). "
+                + "The app switches to the fallback when the primary is unreachable.");
         hint.setTextColor(C_HINT);
         hint.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
         hint.setLineSpacing(0, 1.15f);
@@ -652,41 +736,25 @@ public class MainActivity extends Activity {
 
     private void connectFromSetup() {
         final ServerAuth.Cfg cfg;
+        final String fallback;
         try {
             cfg = ServerAuth.parseConfig(setupPrimary.getText().toString(),
                     setupToken.getText().toString());
+            fallback = fallbackOriginFromInput(setupFallback.getText().toString(), cfg.token);
         } catch (IllegalArgumentException e) {
             showSetupMessage(e.getMessage(), true);
             return;
         }
         hideKeyboard();
         setupPrimary.setText(cfg.origin);
+        if (fallback != null) setupFallback.setText(fallback);
+        primaryOrigin = cfg.origin;
+        fallbackOrigin = fallback;
         setSetupBusy(true);
-        showSetupMessage("正在连接 " + cfg.origin + " …\nVerifying token & session API…", false);
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                final ServerAuth.Result result = ServerAuth.login(cfg.origin, cfg.token);
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (!result.ok) {
-                            setSetupBusy(false);
-                            showSetupMessage(result.error + "\n提示：令牌由终端里的 dsh web "
-                                    + "启动日志打印，重启 dsh web 后令牌会变化。", true);
-                            return;
-                        }
-                        origin = result.origin;
-                        token = cfg.token;
-                        prefs.edit().putString(K_ORIGIN, result.origin)
-                                .putString(K_TOKEN, cfg.token).apply();
-                        applyCookie(result.origin, result.cookie);
-                        loadApp(result.origin);
-                    }
-                });
-            }
-        }, "dsh-connect").start();
+        showSetupMessage("正在连接 " + cfg.origin
+                + (fallback == null ? "" : "（备用 " + fallback + "）")
+                + " …\nVerifying token & session API…", false);
+        authAndLoadBest(cfg.origin, fallback, cfg.token);
     }
 
     private void setSetupBusy(boolean busy) {
@@ -697,6 +765,9 @@ public class MainActivity extends Activity {
         }
         if (setupPrimary != null) {
             setupPrimary.setEnabled(!busy);
+        }
+        if (setupFallback != null) {
+            setupFallback.setEnabled(!busy);
         }
         if (setupToken != null) {
             setupToken.setEnabled(!busy);
@@ -979,6 +1050,58 @@ public class MainActivity extends Activity {
             }
         }
 
+        /**
+         * Called by the UI after the primary origin has been unreachable for a
+         * while. Authenticates the configured Tailscale fallback and reloads
+         * the UI onto it when successful. Returns "true" when a switch attempt
+         * was started (async result is reported via toast/reload).
+         */
+        @JavascriptInterface
+        public String activateFallback() {
+            return activateFallback(null, null);
+        }
+
+        @JavascriptInterface
+        public String activateFallback(String reason, String ignored) {
+            if (fallbackSwitching) return "false";
+            if (fallbackOrigin == null || fallbackOrigin.isEmpty()) return "false";
+            if (token == null || token.isEmpty()) return "false";
+            if (fallbackOrigin.equals(origin)) return "false";
+            long now = System.currentTimeMillis();
+            if (now - fallbackLastAttemptMs < 15000) return "false";
+            fallbackLastAttemptMs = now;
+            fallbackSwitching = true;
+            final String target = fallbackOrigin;
+            final String tok = token;
+            Log.i(TAG, "activateFallback -> " + target + " (" + reason + ")");
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    final ServerAuth.Result result = ServerAuth.login(target, tok);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            fallbackSwitching = false;
+                            if (result.ok) {
+                                origin = result.origin;
+                                saveConfig(primaryOrigin, fallbackOrigin, origin, tok);
+                                applyCookie(origin, result.cookie);
+                                loadApp(origin);
+                                Toast.makeText(MainActivity.this,
+                                        "已切换到 Tailscale 地址", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Log.w(TAG, "fallback failed: " + result.error);
+                                Toast.makeText(MainActivity.this,
+                                        "Tailscale 地址连不上，请确认 Tailscale 已登录并开启",
+                                        Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    });
+                }
+            }, "dsh-fallback").start();
+            return "true";
+        }
+
         @JavascriptInterface
         public void reset() {
             reset(null, null);
@@ -999,7 +1122,8 @@ public class MainActivity extends Activity {
                     pageReady = false;
                     origin = null;
                     token = null;
-                    prefs.edit().remove(K_ORIGIN).remove(K_TOKEN).apply();
+                    prefs.edit().remove(K_ORIGIN).remove(K_TOKEN)
+                            .remove(K_PRIMARY).remove(K_FALLBACK).remove(K_ACTIVE).apply();
                     try {
                         CookieManager.getInstance().removeAllCookies(null);
                         CookieManager.getInstance().flush();

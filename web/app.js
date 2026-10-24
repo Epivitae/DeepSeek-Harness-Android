@@ -65,6 +65,8 @@
   };
 
   var dom = {};
+  var fallbackTimer = null;
+  var fallbackAttempts = 0;
 
   function newChatState() {
     return {
@@ -176,6 +178,27 @@
 
   /* -------------------------------------------------------------- client */
 
+  function cancelFallback() {
+    if (fallbackTimer) {
+      clearTimeout(fallbackTimer);
+      fallbackTimer = null;
+    }
+  }
+
+  function scheduleFallback() {
+    if (fallbackTimer || fallbackAttempts >= 2) return;
+    if (!window.DSHNative || typeof window.DSHNative.activateFallback !== 'function') return;
+    fallbackTimer = window.setTimeout(function () {
+      fallbackTimer = null;
+      fallbackAttempts++;
+      var res = nativeCall('activateFallback', 'connection-offline');
+      if (res === 'true' || res === true) {
+        return; // native reloads the WebView on the fallback origin
+      }
+      if (state.connection !== 'connected') scheduleFallback();
+    }, 6000);
+  }
+
   function initClient() {
     var Client = window.DSHClient;
     state.client = new Client({
@@ -184,15 +207,30 @@
       onEvent: function (value) { handleEvent(value); },
       onAssistantFrame: function (value) { handleAssistantFrame(value); },
       onStreamEnd: function (value) { handleStreamEnd(value); },
-      onStatus: function (s) { state.connection = s; setConnection(s); if (s === 'connected') { loadSessions(!state.sessionsLoaded); } },
-      onError: function (err) { console.warn('[dsh]', err); },
+      onStatus: function (s) {
+        state.connection = s;
+        setConnection(s);
+        if (s === 'connected') {
+          cancelFallback();
+          loadSessions(!state.sessionsLoaded);
+        } else if (s === 'offline' || s === 'reconnecting') {
+          scheduleFallback();
+        }
+      },
+      onError: function (err) {
+        console.warn('[dsh]', err);
+        if (state.connection !== 'connected') scheduleFallback();
+      },
       onAuthError: function (err) { showAuthExpired(err); }
     });
     state.connection = 'connecting';
     setConnection('connecting');
     try {
       var p = state.client.connect();
-      if (p && p.then) p.then(function () {}, function (err) { console.warn('[dsh] connect failed', err); });
+      if (p && p.then) p.then(function () {}, function (err) {
+        console.warn('[dsh] connect failed', err);
+        scheduleFallback();
+      });
     } catch (e) { console.warn('[dsh] connect threw', e); }
   }
 
@@ -213,6 +251,7 @@
       renderHome();
       setRefreshBusy(false);
       if (!silent) toast((err && err.message) || '无法加载会话');
+      if (!(err && err.code && /auth|credential/i.test(err.code))) scheduleFallback();
     });
   }
 
