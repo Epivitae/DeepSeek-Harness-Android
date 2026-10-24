@@ -9,7 +9,7 @@ Keystores are **not committed to this repository**:
 | build | signing key | notes |
 |---|---|---|
 | debug (`dist/dsh-client-debug.apk`) | standard Android debug key (`~/.android/debug.keystore`, generated automatically) | debuggable, ships the local proof activity |
-| release (`dist/DSH-Client-1.1.0.apk`) | project release key, generated on first release build or supplied via env vars | universal APK for sideloading |
+| release (`dist/DSH-Client-1.1.1.apk`) | project release key, generated on first release build or supplied via env vars | universal APK for sideloading |
 
 The release key is a self-signed RSA-2048 certificate (`CN=DSH Client`). Provide it
 through environment variables (never commit the keystore or passwords):
