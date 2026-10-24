@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- DEBUG build manifest: adds android:debuggable (enables run-as and the
+     debug-only dshAutoUrl launch extra) and ships the diagnostic ProofActivity
+     used by tools/android-proof/run-proof.sh. The release build uses
+     app/AndroidManifest.xml, which has neither. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="ai.deepseek.dshclient">
+
+    <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="31" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <application
+        android:label="@string/app_name"
+        android:icon="@drawable/ic_launcher"
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true"
+        android:allowBackup="false"
+        android:debuggable="true"
+        android:hardwareAccelerated="true"
+        android:supportsRtl="true">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|uiMode"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ProofActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|uiMode"
+            android:windowSoftInputMode="adjustResize" />
+    </application>
+</manifest>

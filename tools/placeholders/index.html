@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>DSH</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #0b0c0f; color: #e8edf4;
+    font-family: -apple-system, "Roboto", "Noto Sans CJK SC", "PingFang SC", sans-serif; }
+  body { padding: 20px 18px calc(28px + env(safe-area-inset-bottom)); }
+  header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px; }
+  h1 { font-size: 24px; margin: 0; letter-spacing: .04em; }
+  .tag { font-size: 11px; color: #ffd166; border: 1px solid #5a4a1e;
+    background: #1d190c; border-radius: 999px; padding: 3px 9px; }
+  p { font-size: 14px; line-height: 1.55; color: #8b98a9; }
+  .card { background: #14181f; border: 1px solid #232b38; border-radius: 12px;
+    padding: 14px 16px; margin-top: 14px; }
+  .label { font-size: 11px; letter-spacing: .08em; color: #8b98a9; margin-bottom: 8px; }
+  .row { font-size: 13px; line-height: 1.6; font-family: Menlo, Consolas, monospace;
+    word-break: break-word; }
+  .ok { color: #3ddc84; }
+  .bad { color: #ff6b6b; }
+  .muted { color: #8b98a9; }
+  button { margin-top: 16px; width: 100%; padding: 13px; border: 0; border-radius: 12px;
+    background: #4f8cff; color: #06121f; font-size: 15px; font-weight: 700; }
+  button.ghost { background: #161a21; color: #e8edf4; border: 1px solid #2a3342; }
+</style>
+</head>
+<body>
+<div id="app" data-ready="1">
+  <header>
+    <h1>DSH</h1>
+    <span class="tag">shell placeholder</span>
+  </header>
+  <p>占位页：真实界面 <code>web/index.html</code> 尚未合并。此页用于验证 Android shell 的
+    WebView 同源加载、Cookie、<code>DSHNative</code> 桥接与 <code>/api/session/list</code> 请求。</p>
+
+  <div class="card">
+    <div class="label">WEBVIEW / SAME-ORIGIN</div>
+    <div class="row" id="env">…</div>
+  </div>
+
+  <div class="card">
+    <div class="label">DSHNative BRIDGE</div>
+    <div class="row" id="bridge">…</div>
+  </div>
+
+  <div class="card">
+    <div class="label">POST /api/session/list</div>
+    <div class="row" id="sessions">…</div>
+  </div>
+
+  <button id="reconfigure" class="ghost">重新设置服务器 / Reconfigure</button>
+</div>
+<script>
+(function () {
+  "use strict";
+  var app = document.getElementById("app");
+  var env = document.getElementById("env");
+  var bridge = document.getElementById("bridge");
+  var sessions = document.getElementById("sessions");
+  var native = window.DSHNative || null;
+
+  function add(box, key, value, cls) {
+    var div = document.createElement("div");
+    div.className = "row" + (cls ? " " + cls : "");
+    div.textContent = key + ": " + value;
+    box.appendChild(div);
+  }
+
+  add(env, "location.origin", location.origin, "ok");
+  add(env, "protocol", location.protocol, "muted");
+  add(env, "userAgent", navigator.userAgent, "muted");
+
+  if (native) {
+    var base = "";
+    try { base = native.getBaseUrl(); } catch (e) { base = "error: " + e; }
+    add(bridge, "getBaseUrl()", base || "(empty)", base ? "ok" : "bad");
+    add(bridge, "appVersion()", String(native.appVersion ? native.appVersion() : "?"), "muted");
+    add(bridge, "pageReady()", "called", "ok");
+  } else {
+    add(bridge, "DSHNative", "missing (plain browser)", "muted");
+  }
+
+  window.DSH_onBack = function () {
+    // Nothing to consume on the placeholder screen.
+    return false;
+  };
+  window.DSH_onResume = function () {
+    loadSessions();
+  };
+
+  function loadSessions() {
+    sessions.textContent = "";
+    add(sessions, "request", "POST /api/session/list …", "muted");
+    var body = JSON.stringify({
+      type: "client-request",
+      rpcId: "placeholder-" + Date.now(),
+      method: "session/list",
+      payload: { args: { _request: {} } }
+    });
+    fetch("/api/session/list", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      credentials: "same-origin",
+      body: body
+    }).then(function (response) {
+      return response.text().then(function (text) {
+        return { status: response.status, text: text };
+      });
+    }).then(function (res) {
+      var ok = res.status === 200 && res.text.indexOf('"ok":true') >= 0;
+      add(sessions, "HTTP " + res.status, ok ? "cookie + same-origin OK" : res.text.slice(0, 200),
+          ok ? "ok" : "bad");
+      if (ok) {
+        try {
+          var parsed = JSON.parse(res.text);
+          var items = (parsed.result && parsed.result.value && parsed.result.value.items) || [];
+          add(sessions, "sessions", String(items.length), "ok");
+          items.slice(0, 5).forEach(function (item) {
+            var title = item.projections && item.projections.values &&
+                item.projections.values.title;
+            add(sessions, item.sessionId.slice(0, 18), title || "(untitled)", "muted");
+          });
+        } catch (e) {
+          add(sessions, "parse", String(e), "bad");
+        }
+      }
+    }).catch(function (err) {
+      add(sessions, "error", String(err), "bad");
+    });
+  }
+
+  var reconfigure = document.getElementById("reconfigure");
+  if (native && native.reset) {
+    reconfigure.addEventListener("click", function () {
+      native.reset();
+    });
+  } else {
+    reconfigure.style.display = "none";
+  }
+
+  // Tell native the first render is done; the shell removes its splash overlay.
+  loadSessions();
+  try {
+    if (native && native.pageReady) { native.pageReady(); }
+  } catch (e) { /* ignore */ }
+})();
+</script>
+</body>
+</html>

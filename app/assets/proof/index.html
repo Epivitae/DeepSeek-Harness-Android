@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DSH WebView proof</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #0b0c0f; color: #e8edf4;
+    font-family: -apple-system, "Roboto", "Noto Sans CJK SC", sans-serif; }
+  body { padding: 16px 22px 30px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  #sub { color: #8b98a9; font-size: 13px; margin-bottom: 12px; }
+  #final { font-size: 21px; font-weight: 700; padding: 12px 14px; border-radius: 10px;
+    background: #14181f; border: 1px solid #2a3342; margin: 8px 0 14px;
+    word-break: break-word; }
+  #final.ok { color: #3ddc84; border-color: #1f6b45; }
+  #final.bad { color: #ff6b6b; border-color: #6b2424; }
+  #final.run { color: #ffd166; }
+  #rows div { font-size: 14px; line-height: 1.45; font-family: Menlo, Consolas, monospace;
+    padding: 5px 0; border-bottom: 1px solid #14181f; word-break: break-word; }
+  #rows div.ok { color: #3ddc84; }
+  #rows div.bad { color: #ff6b6b; }
+  #rows div.muted { color: #8b98a9; }
+</style>
+</head>
+<body>
+<h1>DSH WebView capability proof</h1>
+<div id="sub">loadDataWithBaseURL(serverOrigin) &middot; native cookie auth &middot; same-origin fetch &middot; mux WebSocket</div>
+<div id="final" class="run">RUNNING&hellip;</div>
+<div id="rows"></div>
+<script>
+(function () {
+  "use strict";
+  var rows = document.getElementById("rows");
+  var finalEl = document.getElementById("final");
+  var finished = false;
+
+  function bridge(step, ok, detail) {
+    try {
+      if (window.Proof && window.Proof.report) {
+        window.Proof.report(step, ok ? "ok" : "fail", String(detail));
+      }
+    } catch (e) { /* native bridge is best-effort */ }
+  }
+  function line(text, cls) {
+    var div = document.createElement("div");
+    if (cls) { div.className = cls; }
+    div.textContent = text;
+    rows.appendChild(div);
+    return div;
+  }
+  function done(ok, detail) {
+    if (finished) { return; }
+    finished = true;
+    finalEl.textContent = (ok ? "RESULT: OK \u2014 " : "RESULT: FAIL \u2014 ") + detail;
+    finalEl.className = ok ? "ok" : "bad";
+    bridge("final", ok, detail);
+  }
+  function fail(detail) {
+    line("FAIL " + detail, "bad");
+    done(false, detail);
+  }
+
+  var origin = window.location.origin;
+  var href = String(window.location.href);
+  line("location.origin  = " + origin, "muted");
+  line("location.href    = " + href.slice(0, 160), "muted");
+  line("document.baseURI = " + String(document.baseURI).slice(0, 160), "muted");
+  bridge("origin", origin !== "null" && origin.indexOf("http") === 0, origin);
+
+  if (origin === "null" || origin.indexOf("http") !== 0) {
+    fail("page origin is not the DSH server origin (still data:/null)");
+    return;
+  }
+  line("PASS page is same-origin with the DSH server", "ok");
+
+  var rpcId = "proof-" + Math.random().toString(16).slice(2) + "-" + Date.now();
+  var body = JSON.stringify({
+    type: "client-request",
+    rpcId: rpcId,
+    method: "session/list",
+    payload: { args: { _request: {} } }
+  });
+  var t0 = Date.now();
+  line("POST /api/session/list \u2026", "muted");
+
+  fetch("/api/session/list", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    credentials: "same-origin",
+    body: body
+  }).then(function (response) {
+    return response.text().then(function (text) {
+      return { status: response.status, text: text };
+    });
+  }).then(function (res) {
+    var ms = Date.now() - t0;
+    var ok = res.status === 200 && res.text.indexOf('"ok":true') >= 0;
+    line("fetch POST /api/session/list -> HTTP " + res.status + " in " + ms + " ms", ok ? "ok" : "bad");
+    line("response: " + res.text.slice(0, 240), "muted");
+    bridge("fetch", ok, "HTTP " + res.status + " in " + ms + "ms");
+    if (!ok) {
+      fail("same-origin fetch rejected (HTTP " + res.status + ")");
+      return;
+    }
+    line("PASS WebView sent the auth cookie (session/list ok)", "ok");
+    var parsed;
+    try { parsed = JSON.parse(res.text); } catch (e) { fail("session/list is not JSON: " + e); return; }
+    var items = (parsed.result && parsed.result.value && parsed.result.value.items) || [];
+    var first = items.length ? items[0] : null;
+    line("sessions: " + items.length + (first ? (", first=" + first.sessionId) : ""), "muted");
+    openSocket(first ? first.sessionId : null);
+  }).catch(function (err) {
+    line("fetch error: " + err, "bad");
+    fail("fetch failed: " + err);
+  });
+
+  function openSocket(sessionId) {
+    var wsScheme = window.location.protocol === "https:" ? "wss:" : "ws:";
+    var url = wsScheme + "//" + window.location.host + "/api/remote.mux";
+    line("WebSocket " + url + " \u2026", "muted");
+    var ws;
+    try { ws = new WebSocket(url); } catch (e) { fail("WebSocket construct: " + e); return; }
+    var settled = false;
+    var timer = setTimeout(function () {
+      if (!settled) {
+        settled = true;
+        fail("WebSocket timeout (no snapshot in 12s)");
+        try { ws.close(); } catch (e) {}
+      }
+    }, 12000);
+
+    ws.onopen = function () {
+      line("PASS WebSocket handshake (cookie accepted by mux)", "ok");
+      bridge("ws-open", true, url);
+      var streamId = "proof-stream-" + Math.random().toString(16).slice(2);
+      var frame;
+      if (sessionId) {
+        frame = {
+          type: "open", streamId: streamId, endpoint: "session/follow",
+          payload: { args: { request: {
+            address: { kind: "session", sessionId: sessionId },
+            maxMessages: 5,
+            assistantStream: true
+          } } }
+        };
+      } else {
+        frame = {
+          type: "open", streamId: streamId, endpoint: "session/list",
+          payload: { args: { _request: {} } }
+        };
+      }
+      ws.send(JSON.stringify(frame));
+    };
+    ws.onmessage = function (event) {
+      var text = String(event.data);
+      var msg;
+      try { msg = JSON.parse(text); } catch (e) { line("WS non-JSON: " + text.slice(0, 120), "bad"); return; }
+      if (msg.type === "item") {
+        var value = msg.value || {};
+        if (value.type === "snapshot") {
+          var records = value.records || [];
+          line("PASS session/follow snapshot over WS: " + records.length + " record(s)", "ok");
+          bridge("ws", true, "snapshot records=" + records.length);
+          if (!settled) {
+            settled = true;
+            clearTimeout(timer);
+            done(true, "cookie + same-origin fetch + WS session/follow snapshot OK");
+          }
+          try { ws.close(); } catch (e) {}
+        } else {
+          line("WS item type=" + String(value.type), "muted");
+        }
+      } else if (msg.type === "error") {
+        line("WS error frame: " + JSON.stringify(msg.error || {}).slice(0, 200), "bad");
+        bridge("ws", false, JSON.stringify(msg.error || {}));
+        if (!settled) { settled = true; clearTimeout(timer); fail("WS stream error"); }
+        try { ws.close(); } catch (e) {}
+      } else if (msg.type === "end") {
+        line("WS end frame (stream closed)", "muted");
+      }
+    };
+    ws.onerror = function () {
+      line("WS error event (handshake failed?)", "bad");
+    };
+    ws.onclose = function (event) {
+      line("WS closed code=" + event.code + " reason=" + (event.reason || ""), "muted");
+      if (!settled) {
+        settled = true;
+        clearTimeout(timer);
+        fail("WebSocket closed before snapshot (code=" + event.code + ")");
+      }
+    };
+  }
+})();
+</script>
+</body>
+</html>

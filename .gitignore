@@ -1,0 +1,19 @@
+# Build output
+.build/
+dist/
+*.idsig
+
+# Signing material (never commit keystores or passwords)
+*.keystore
+*.jks
+app/SIGNING.local.md
+
+# Recorded live-session fixtures (contain real session data; capture locally)
+tools/fixtures/
+
+# Local device proof logs / screenshots
+tools/android-proof/
+
+# OS/editor noise
+.DS_Store
+*.log
