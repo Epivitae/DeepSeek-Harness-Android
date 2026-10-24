@@ -8,7 +8,7 @@
 // replays; no network or LLM access is needed to run the tests.
 //
 // Usage: node tools/test-capture.mjs [--base http://127.0.0.1:3080]
-//                                    [--token-file /root/.dsh-token]
+//                                    [--token-file <path>]
 //                                    [--prompt "Reply with exactly: pong."]
 //
 // LLM cost: exactly one short prompt (plus fallback title generation by the
@@ -27,7 +27,7 @@ const WebSocket = requireDsh('ws');
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.dirname(HERE);
 const OUT = path.join(HERE, 'fixtures');
-const TOKEN_FILE = process.env.DSH_TOKEN_FILE || '/root/.dsh-token';
+const TOKEN_FILE = process.env.DSH_TOKEN_FILE || ((process.env.HOME || '.') + '/.dsh-token');
 
 const argv = process.argv.slice(2);
 function opt(name, dflt) {

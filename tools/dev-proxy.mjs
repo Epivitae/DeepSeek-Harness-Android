@@ -10,7 +10,7 @@
 // Usage: node tools/dev-proxy.mjs [--port 8099] [--root /root/DSH-Client/web]
 //                                [--upstream http://127.0.0.1:3080]
 //
-// The auth token is read from /root/.dsh-token (format:
+// The auth token is read from $DSH_TOKEN_FILE (default: ~/.dsh-token; format:
 // http://127.0.0.1:3080/?token=...). The token can rotate when dsh-web
 // restarts; the proxy re-reads + re-exchanges it automatically when the
 // upstream answers 401 or the WS handshake is rejected.
@@ -34,7 +34,7 @@ function argValue(name, fallback) {
 
 const PORT = Number(argValue('port', process.env.DEV_PROXY_PORT || 8099));
 const ROOT = path.resolve(argValue('root', path.join(REPO, 'web')));
-const TOKEN_FILE = argValue('token-file', process.env.DSH_TOKEN_FILE || '/root/.dsh-token');
+const TOKEN_FILE = argValue('token-file', process.env.DSH_TOKEN_FILE || ((process.env.HOME || '.') + '/.dsh-token'));
 const UPSTREAM = new URL(argValue('upstream', 'http://127.0.0.1:3080'));
 const UPSTREAM_HOST = UPSTREAM.hostname;
 const UPSTREAM_PORT = Number(UPSTREAM.port || 80);
