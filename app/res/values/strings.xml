@@ -1,4 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">DSH</string>
+    <string name="connecting" formatted="false">"正在连接服务器… / Connecting…"</string>
+    <string name="switched_to_tailscale" formatted="false">"内网连接失败，已切换到 Tailscale"</string>
+    <string name="connection_failed" formatted="false">"连接失败"</string>
+    <string name="primary_failed" formatted="false">"内网连接失败："</string>
+    <string name="fallback_failed" formatted="false">"\n\nTailscale 连接失败："</string>
+    <string name="token_hint" formatted="false">"\n提示：令牌由终端里的 dsh web 启动日志打印，重启 dsh web 后令牌会变化。"</string>
+    <string name="loading_ui" formatted="false">"正在加载界面… / Loading…"</string>
+    <string name="bundled_ui_missing" formatted="false">"内置界面缺失 / Bundled UI missing: "</string>
+    <string name="setup_subtitle" formatted="false">"连接你的 DSH 服务器  ·  Connect to your DSH server"</string>
+    <string name="primary_hint" formatted="false">"http://192.168.1.10:3080 或 https://&lt;machine&gt;.&lt;tailnet&gt;.ts.net:3080/?token=…"</string>
+    <string name="primary_label" formatted="false">"内网地址 / PRIMARY URL"</string>
+    <string name="fallback_hint" formatted="false">"可选：https://&lt;machine&gt;.&lt;tailnet&gt;.ts.net:3080"</string>
+    <string name="fallback_label" formatted="false">"Tailscale 地址 / FALLBACK URL（可选）"</string>
+    <string name="token_placeholder" formatted="false">"粘贴令牌（?token= 后面的部分）"</string>
+    <string name="token_label" formatted="false">"令牌 / TOKEN"</string>
+    <string name="setup_hint" formatted="false">"提示：主地址填内网 http://192.168.1.10:3080；Tailscale 地址选填（如 https://&lt;machine&gt;.&lt;tailnet&gt;.ts.net:3080），内网连不上时会自动切换。令牌会自动解析。\nTip: primary = LAN URL, fallback = Tailscale URL (optional). The app switches to the fallback when the primary is unreachable."</string>
+    <string name="storage_notice" formatted="false">"令牌只保存在本机 SharedPreferences；页面通过原生 Cookie 认证。"</string>
+    <string name="connect" formatted="false">"连接 / Connect"</string>
+    <string name="paste" formatted="false">"粘贴 / Paste"</string>
+    <string name="clipboard_empty" formatted="false">"剪贴板为空 / Clipboard is empty"</string>
+    <string name="connection_pasted" formatted="false">"已粘贴并解析服务器地址与令牌 / Parsed URL + token"</string>
+    <string name="paste_failed" formatted="false">"粘贴失败 / Paste failed: "</string>
+    <string name="connecting_to" formatted="false">"正在连接 "</string>
+    <string name="fallback_prefix" formatted="false">"（备用 "</string>
+    <string name="connecting_busy" formatted="false">"请稍候… / Connecting…"</string>
+    <string name="open_link_failed" formatted="false">"无法打开链接 / Cannot open link"</string>
+    <string name="fallback_switched" formatted="false">"已切换到 Tailscale 地址"</string>
+    <string name="fallback_unavailable" formatted="false">"Tailscale 地址连不上，请确认 Tailscale 已登录并开启"</string>
+    <string name="server_required" formatted="false">"请输入服务器地址 / Server URL is required"</string>
+    <string name="token_required_hint" formatted="false">"请输入令牌 / Token is required (it is printed by `dsh web` in the terminal)"</string>
+    <string name="http_required" formatted="false">"只支持 http:// 或 https:// 地址"</string>
+    <string name="invalid_server_url" formatted="false">"服务器地址格式不正确 / Bad server URL"</string>
+    <string name="invalid_server_url_detail" formatted="false">"服务器地址格式不正确 / Bad server URL: "</string>
+    <string name="token_required" formatted="false">"请输入令牌 / Token is required"</string>
+    <string name="token_rejected" formatted="false">"令牌无效或已过期 / Token rejected (HTTP "</string>
+    <string name="http_server_error" formatted="false">"服务器返回错误 HTTP "</string>
+    <string name="no_auth_cookie" formatted="false">"服务器没有返回登录 Cookie / No auth cookie (HTTP "</string>
+    <string name="cookie_rejected" formatted="false">"令牌无效或已过期 / Cookie rejected by server (HTTP "</string>
+    <string name="http_session_error" formatted="false">"验证会话失败 HTTP "</string>
+    <string name="invalid_session_response" formatted="false">"会话接口返回异常 / Unexpected session/list response"</string>
+    <string name="verify_failed" formatted="false">"验证会话失败 / Verify failed: "</string>
+    <string name="connection_timeout" formatted="false">"连接服务器超时 / Timed out"</string>
+    <string name="cannot_connect" formatted="false">"无法连接服务器，请检查地址与网络 / Cannot connect to server"</string>
+    <string name="unknown_host" formatted="false">"无法解析服务器地址 / Unknown host"</string>
+    <string name="network_error" formatted="false">"网络错误 / Network error: "</string>
+    <string name="notification_channel" formatted="false">"DSH 任务通知"</string>
+    <string name="notification_description" formatted="false">"DeepSeek Harness 任务完成 / 失败提醒"</string>
+    <string name="fallback_close" formatted="false">"）"</string>
+    <string name="verifying_session" formatted="false">" …\nVerifying token &amp; session API…"</string>
+    <string name="server_error_suffix" formatted="false">" / Server error"</string>
+    <string name="session_error_suffix" formatted="false">" / Session check failed"</string>
+    <string name="auth_cookie_suffix" formatted="false">"). Is the token current?"</string>
 </resources>

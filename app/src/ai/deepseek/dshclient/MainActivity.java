@@ -148,7 +148,7 @@ public class MainActivity extends Activity {
 
         if (primaryOrigin != null && !primaryOrigin.isEmpty()
                 && token != null && !token.isEmpty()) {
-            showLoadingOverlay("正在连接服务器… / Connecting…");
+            showLoadingOverlay(MainActivity.this.getString(R.string.connecting));
             authAndLoadBest(primaryOrigin, fallbackOrigin, token);
         } else {
             showSetup(null);
@@ -183,13 +183,13 @@ public class MainActivity extends Activity {
             return false;
         }
         try {
-            ServerAuth.Cfg cfg = ServerAuth.parseConfig(autoUrl,
+            ServerAuth.Cfg cfg = ServerAuth.parseConfig(MainActivity.this, autoUrl,
                     intent.getStringExtra("dshAutoToken"));
             String autoFallback = intent.getStringExtra("dshAutoFallback");
             String fallback = null;
             if (autoFallback != null && !autoFallback.trim().isEmpty()) {
                 try {
-                    fallback = ServerAuth.parseConfig(autoFallback, cfg.token).origin;
+                    fallback = ServerAuth.parseConfig(MainActivity.this, autoFallback, cfg.token).origin;
                 } catch (IllegalArgumentException ignored) {
                     Log.w(TAG, "ignoring bad dshAutoFallback: " + autoFallback);
                 }
@@ -201,7 +201,7 @@ public class MainActivity extends Activity {
             saveConfig(cfg.origin, fallback, cfg.origin, cfg.token);
             Log.i(TAG, "auto-config from intent: " + cfg.origin
                     + (fallback == null ? "" : " fallback=" + fallback));
-            showLoadingOverlay("正在连接服务器… / Connecting…");
+            showLoadingOverlay(MainActivity.this.getString(R.string.connecting));
             authAndLoadBest(cfg.origin, fallback, cfg.token);
             return true;
         } catch (IllegalArgumentException e) {
@@ -315,14 +315,14 @@ public class MainActivity extends Activity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                final ServerAuth.Result primaryResult = ServerAuth.login(primary, tok);
+                final ServerAuth.Result primaryResult = ServerAuth.login(MainActivity.this, primary, tok);
                 ServerAuth.Result fallbackResult = null;
                 ServerAuth.Result result = primaryResult;
                 boolean usedFallback = false;
                 if (!primaryResult.ok && fallback != null && !fallback.isEmpty()
                         && !fallback.equals(primary)) {
                     Log.i(TAG, "primary failed, trying fallback " + fallback);
-                    fallbackResult = ServerAuth.login(fallback, tok);
+                    fallbackResult = ServerAuth.login(MainActivity.this, fallback, tok);
                     if (fallbackResult.ok) {
                         result = fallbackResult;
                         usedFallback = true;
@@ -345,20 +345,19 @@ public class MainActivity extends Activity {
                             loadApp(origin);
                             if (finalUsedFallback) {
                                 Toast.makeText(MainActivity.this,
-                                        "内网连接失败，已切换到 Tailscale",
+                                        MainActivity.this.getString(R.string.switched_to_tailscale),
                                         Toast.LENGTH_LONG).show();
                             }
                         } else {
                             Log.w(TAG, "auth failed: " + finalResult.error);
-                            String message = finalResult.error == null ? "连接失败" : finalResult.error;
+                            String message = finalResult.error == null ? MainActivity.this.getString(R.string.connection_failed) : finalResult.error;
                             if (finalFallbackResult != null) {
-                                message = "内网连接失败：" + primaryResult.error
-                                        + "\n\nTailscale 连接失败：" + finalFallbackResult.error;
+                                message = MainActivity.this.getString(R.string.primary_failed) + primaryResult.error
+                                        + MainActivity.this.getString(R.string.fallback_failed) + finalFallbackResult.error;
                             }
                             if (setupView != null) {
                                 setSetupBusy(false);
-                                showSetupMessage(message + "\n提示：令牌由终端里的 dsh web "
-                                        + "启动日志打印，重启 dsh web 后令牌会变化。", true);
+                                showSetupMessage(message + MainActivity.this.getString(R.string.token_hint), true);
                             } else {
                                 showSetup(message);
                             }
@@ -382,7 +381,7 @@ public class MainActivity extends Activity {
     /** Parse an optional fallback address (URL or host[:port]). */
     private String fallbackOriginFromInput(String input, String tok) {
         if (input == null || input.trim().isEmpty()) return null;
-        return ServerAuth.parseConfig(input, tok).origin;
+        return ServerAuth.parseConfig(MainActivity.this, input, tok).origin;
     }
 
     private void applyCookie(String baseOrigin, String cookie) {
@@ -416,14 +415,14 @@ public class MainActivity extends Activity {
         setupPrimary = null;
         setupFallback = null;
         setupToken = null;
-        showLoadingOverlay("正在加载界面… / Loading…");
+        showLoadingOverlay(MainActivity.this.getString(R.string.loading_ui));
 
         final String html;
         try {
             html = readAsset("ui/index.html");
         } catch (IOException e) {
             Log.e(TAG, "bundled ui/index.html missing", e);
-            showSetup("内置界面缺失 / Bundled UI missing: " + e.getMessage());
+            showSetup(MainActivity.this.getString(R.string.bundled_ui_missing) + e.getMessage());
             return;
         }
 
@@ -530,7 +529,7 @@ public class MainActivity extends Activity {
         box.addView(title);
 
         TextView subtitle = new TextView(this);
-        subtitle.setText("连接你的 DSH 服务器  ·  Connect to your DSH server");
+        subtitle.setText(MainActivity.this.getString(R.string.setup_subtitle));
         subtitle.setTextColor(C_MUTED);
         subtitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
         LinearLayout.LayoutParams subLp = new LinearLayout.LayoutParams(
@@ -539,7 +538,7 @@ public class MainActivity extends Activity {
         box.addView(subtitle, subLp);
 
         setupPrimary = field(
-                "http://192.168.1.10:3080 或 https://<machine>.<tailnet>.ts.net:3080/?token=…",
+                MainActivity.this.getString(R.string.primary_hint),
                 InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
         setupPrimary.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_NEXT);
         if (primaryOrigin != null) {
@@ -547,27 +546,23 @@ public class MainActivity extends Activity {
         } else if (origin != null) {
             setupPrimary.setText(origin);
         }
-        box.addView(labeledField("内网地址 / PRIMARY URL", setupPrimary));
+        box.addView(labeledField(MainActivity.this.getString(R.string.primary_label), setupPrimary));
 
-        setupFallback = field("可选：https://<machine>.<tailnet>.ts.net:3080",
+        setupFallback = field(MainActivity.this.getString(R.string.fallback_hint),
                 InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
         setupFallback.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_NEXT);
         if (fallbackOrigin != null) {
             setupFallback.setText(fallbackOrigin);
         }
-        box.addView(labeledField("Tailscale 地址 / FALLBACK URL（可选）", setupFallback));
+        box.addView(labeledField(MainActivity.this.getString(R.string.fallback_label), setupFallback));
 
-        setupToken = field("粘贴令牌（?token= 后面的部分）",
+        setupToken = field(MainActivity.this.getString(R.string.token_placeholder),
                 InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
         setupToken.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_DONE);
-        box.addView(labeledField("令牌 / TOKEN", setupToken));
+        box.addView(labeledField(MainActivity.this.getString(R.string.token_label), setupToken));
 
         TextView hint = new TextView(this);
-        hint.setText("提示：主地址填内网 http://192.168.1.10:3080；Tailscale 地址选填"
-                + "（如 https://<machine>.<tailnet>.ts.net:3080），内网连不上时会自动切换。"
-                + "令牌会自动解析。\n"
-                + "Tip: primary = LAN URL, fallback = Tailscale URL (optional). "
-                + "The app switches to the fallback when the primary is unreachable.");
+        hint.setText(MainActivity.this.getString(R.string.setup_hint));
         hint.setTextColor(C_HINT);
         hint.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
         hint.setLineSpacing(0, 1.15f);
@@ -577,7 +572,7 @@ public class MainActivity extends Activity {
         box.addView(hint, hintLp);
 
         TextView footnote = new TextView(this);
-        footnote.setText("令牌只保存在本机 SharedPreferences；页面通过原生 Cookie 认证。");
+        footnote.setText(MainActivity.this.getString(R.string.storage_notice));
         footnote.setTextColor(C_HINT);
         footnote.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
         LinearLayout.LayoutParams footLp = new LinearLayout.LayoutParams(
@@ -609,8 +604,7 @@ public class MainActivity extends Activity {
         if (error == null) {
             setupStatus.setVisibility(View.GONE);
         } else {
-            setupStatus.setText(error + "\n提示：令牌由终端里的 dsh web 启动日志打印，"
-                    + "重启 dsh web 后令牌会变化。");
+            setupStatus.setText(error + MainActivity.this.getString(R.string.token_hint));
             setupStatus.setVisibility(View.VISIBLE);
         }
         LinearLayout.LayoutParams statusLp = new LinearLayout.LayoutParams(
@@ -620,7 +614,7 @@ public class MainActivity extends Activity {
         bottom.addView(setupStatus, statusLp);
 
         setupButton = new Button(this);
-        setupButton.setText("连接 / Connect");
+        setupButton.setText(MainActivity.this.getString(R.string.connect));
         setupButton.setAllCaps(false);
         setupButton.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
         setupButton.setTextColor(C_ON_ACCENT);
@@ -670,7 +664,7 @@ public class MainActivity extends Activity {
                 ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
 
         TextView paste = new TextView(this);
-        paste.setText("粘贴 / Paste");
+        paste.setText(MainActivity.this.getString(R.string.paste));
         paste.setTextColor(C_ACCENT);
         paste.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
         paste.setGravity(Gravity.CENTER_VERTICAL);
@@ -694,18 +688,18 @@ public class MainActivity extends Activity {
         try {
             ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
             if (clipboard == null || !clipboard.hasPrimaryClip()) {
-                showSetupMessage("剪贴板为空 / Clipboard is empty", false);
+                showSetupMessage(MainActivity.this.getString(R.string.clipboard_empty), false);
                 return;
             }
             ClipData clip = clipboard.getPrimaryClip();
             if (clip == null || clip.getItemCount() == 0) {
-                showSetupMessage("剪贴板为空 / Clipboard is empty", false);
+                showSetupMessage(MainActivity.this.getString(R.string.clipboard_empty), false);
                 return;
             }
             CharSequence text = clip.getItemAt(0).coerceToText(this);
             String pasted = text == null ? "" : text.toString().trim();
             if (pasted.isEmpty()) {
-                showSetupMessage("剪贴板为空 / Clipboard is empty", false);
+                showSetupMessage(MainActivity.this.getString(R.string.clipboard_empty), false);
                 return;
             }
             // A pasted full dsh URL fills both fields; also works from the
@@ -713,10 +707,10 @@ public class MainActivity extends Activity {
             if (pasted.indexOf("?token=") >= 0 || pasted.startsWith("http://")
                     || pasted.startsWith("https://")) {
                 try {
-                    ServerAuth.Cfg cfg = ServerAuth.parseConfig(pasted, "");
+                    ServerAuth.Cfg cfg = ServerAuth.parseConfig(MainActivity.this, pasted, "");
                     setupPrimary.setText(cfg.origin);
                     setupToken.setText(cfg.token);
-                    showSetupMessage("已粘贴并解析服务器地址与令牌 / Parsed URL + token", false);
+                    showSetupMessage(MainActivity.this.getString(R.string.connection_pasted), false);
                     return;
                 } catch (IllegalArgumentException ignored) {
                     // fall through and paste as-is
@@ -725,7 +719,7 @@ public class MainActivity extends Activity {
             target.setText(pasted);
             target.setSelection(pasted.length());
         } catch (Exception e) {
-            showSetupMessage("粘贴失败 / Paste failed: " + e.getMessage(), true);
+            showSetupMessage(MainActivity.this.getString(R.string.paste_failed) + e.getMessage(), true);
         }
     }
 
@@ -742,7 +736,7 @@ public class MainActivity extends Activity {
         final ServerAuth.Cfg cfg;
         final String fallback;
         try {
-            cfg = ServerAuth.parseConfig(setupPrimary.getText().toString(),
+            cfg = ServerAuth.parseConfig(MainActivity.this, setupPrimary.getText().toString(),
                     setupToken.getText().toString());
             fallback = fallbackOriginFromInput(setupFallback.getText().toString(), cfg.token);
         } catch (IllegalArgumentException e) {
@@ -755,16 +749,16 @@ public class MainActivity extends Activity {
         primaryOrigin = cfg.origin;
         fallbackOrigin = fallback;
         setSetupBusy(true);
-        showSetupMessage("正在连接 " + cfg.origin
-                + (fallback == null ? "" : "（备用 " + fallback + "）")
-                + " …\nVerifying token & session API…", false);
+        showSetupMessage(MainActivity.this.getString(R.string.connecting_to) + cfg.origin
+                + (fallback == null ? "" : MainActivity.this.getString(R.string.fallback_prefix) + fallback + getString(R.string.fallback_close))
+                + getString(R.string.verifying_session), false);
         authAndLoadBest(cfg.origin, fallback, cfg.token);
     }
 
     private void setSetupBusy(boolean busy) {
         if (setupButton != null) {
             setupButton.setEnabled(!busy);
-            setupButton.setText(busy ? "请稍候… / Connecting…" : "连接 / Connect");
+            setupButton.setText(busy ? MainActivity.this.getString(R.string.connecting_busy) : MainActivity.this.getString(R.string.connect));
             setupButton.setAlpha(busy ? 0.6f : 1f);
         }
         if (setupPrimary != null) {
@@ -1012,7 +1006,7 @@ public class MainActivity extends Activity {
                     try {
                         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
                     } catch (Exception e) {
-                        Toast.makeText(MainActivity.this, "无法打开链接 / Cannot open link",
+                        Toast.makeText(MainActivity.this, MainActivity.this.getString(R.string.open_link_failed),
                                 Toast.LENGTH_SHORT).show();
                     }
                 }
@@ -1121,7 +1115,7 @@ public class MainActivity extends Activity {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    final ServerAuth.Result result = ServerAuth.login(target, tok);
+                    final ServerAuth.Result result = ServerAuth.login(MainActivity.this, target, tok);
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -1132,11 +1126,11 @@ public class MainActivity extends Activity {
                                 applyCookie(origin, result.cookie);
                                 loadApp(origin);
                                 Toast.makeText(MainActivity.this,
-                                        "已切换到 Tailscale 地址", Toast.LENGTH_SHORT).show();
+                                        MainActivity.this.getString(R.string.fallback_switched), Toast.LENGTH_SHORT).show();
                             } else {
                                 Log.w(TAG, "fallback failed: " + result.error);
                                 Toast.makeText(MainActivity.this,
-                                        "Tailscale 地址连不上，请确认 Tailscale 已登录并开启",
+                                        MainActivity.this.getString(R.string.fallback_unavailable),
                                         Toast.LENGTH_LONG).show();
                             }
                         }
@@ -1247,7 +1241,7 @@ public class MainActivity extends Activity {
         try {
             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
         } catch (Exception e) {
-            Toast.makeText(this, "无法打开链接 / Cannot open link", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, MainActivity.this.getString(R.string.open_link_failed), Toast.LENGTH_SHORT).show();
         }
     }
 

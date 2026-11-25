@@ -40,20 +40,20 @@
 <div id="app" data-ready="0">
   <div class="bg-aura" aria-hidden="true"></div>
 
-  <section class="view view-home" id="view-home" data-view="home" aria-label="会话列表">
+  <section class="view view-home" id="view-home" data-view="home" aria-label="会话列表" data-i18n-aria-label="sessionList">
     <header class="topbar">
       <div class="brand">
         <span class="brand-mark" aria-hidden="true"><svg class="logo"><use href="#whale"/></svg></span>
         <div class="brand-copy">
           <div class="brand-title">DeepSeek Harness</div>
-          <div class="brand-sub" id="brand-sub">远程 Agent 客户端</div>
+          <div class="brand-sub" id="brand-sub"><span data-i18n="remoteClient">远程 Agent 客户端</span></div>
         </div>
       </div>
       <div class="topbar-actions">
-        <span class="conn-badge" id="conn-badge" data-state="connecting" title="连接状态">
-          <span class="conn-dot"></span><span class="conn-text" id="conn-text">连接中</span>
+        <span class="conn-badge" id="conn-badge" data-state="connecting" title="连接状态" data-i18n-title="connectionStatus">
+          <span class="conn-dot"></span><span class="conn-text" id="conn-text"><span data-i18n="connecting">连接中</span></span>
         </span>
-        <button class="icon-btn" id="btn-settings" aria-label="设置"><svg class="i"><use href="#i-gear"/></svg></button>
+        <button class="icon-btn" id="btn-settings" aria-label="设置" data-i18n-aria-label="settings"><svg class="i"><use href="#i-gear"/></svg></button>
       </div>
     </header>
 
@@ -61,72 +61,72 @@
       <button class="new-chat-card" id="btn-new-chat">
         <span class="new-chat-icon"><svg class="i"><use href="#i-plus"/></svg></span>
         <span class="new-chat-copy">
-          <span class="new-chat-title">新对话</span>
-          <span class="new-chat-sub">发送消息，开始一个任务</span>
+          <span class="new-chat-title"><span data-i18n="newChat">新对话</span></span>
+          <span class="new-chat-sub"><span data-i18n="newChatHint">发送消息，开始一个任务</span></span>
         </span>
         <svg class="i new-chat-chevron"><use href="#i-chevron"/></svg>
       </button>
 
       <div class="list-head" id="list-head" hidden>
-        <span class="list-head-label">最近的对话</span>
-        <button class="text-btn" id="btn-refresh"><svg class="i"><use href="#i-refresh"/></svg><span>刷新</span></button>
+        <span class="list-head-label"><span data-i18n="recentChats">最近的对话</span></span>
+        <button class="text-btn" id="btn-refresh"><svg class="i"><use href="#i-refresh"/></svg><span><span data-i18n="refresh">刷新</span></span></button>
       </div>
 
       <div class="session-list" id="session-list" role="list"></div>
 
       <div class="empty-home" id="empty-home" hidden>
         <div class="empty-mark"><svg class="logo"><use href="#whale"/></svg></div>
-        <div class="empty-title">还没有对话</div>
-        <div class="empty-sub">在你的电脑上运行 dsh web，这里会显示所有会话。</div>
-        <button class="btn btn-primary" id="btn-empty-new"><svg class="i"><use href="#i-plus"/></svg>开始新对话</button>
+        <div class="empty-title"><span data-i18n="noChats">还没有对话</span></div>
+        <div class="empty-sub"><span data-i18n="noChatsHint">在你的电脑上运行 dsh web，这里会显示所有会话。</span></div>
+        <button class="btn btn-primary" id="btn-empty-new"><svg class="i"><use href="#i-plus"/></svg><span data-i18n="startChat">开始新对话</span></button>
       </div>
 
       <div class="home-foot">Powered by DeepSeek Harness</div>
     </div>
   </section>
 
-  <section class="view view-chat" id="view-chat" data-view="chat" aria-label="对话" hidden>
+  <section class="view view-chat" id="view-chat" data-view="chat" aria-label="对话" data-i18n-aria-label="chat" hidden>
     <header class="chat-topbar">
-      <button class="icon-btn only-narrow" id="btn-chat-back" aria-label="返回"><svg class="i"><use href="#i-back"/></svg></button>
+      <button class="icon-btn only-narrow" id="btn-chat-back" aria-label="返回" data-i18n-aria-label="back"><svg class="i"><use href="#i-back"/></svg></button>
       <div class="chat-heading">
-        <div class="chat-title" id="chat-title">新对话</div>
-        <button class="chat-sub" id="btn-chat-model" title="选择模型">
+        <div class="chat-title" id="chat-title"><span data-i18n="newChat">新对话</span></div>
+        <button class="chat-sub" id="btn-chat-model" title="选择模型" data-i18n-title="chooseModel">
           <span class="status-dot" id="chat-status-dot" data-state="idle"></span>
           <span id="chat-sub-text">deepseek-flash</span>
           <svg class="i tiny"><use href="#i-chevron"/></svg>
         </button>
       </div>
       <div class="chat-actions">
-        <button class="icon-btn" id="btn-chat-stop" aria-label="停止生成" hidden><svg class="i stop-icon"><use href="#i-stop"/></svg></button>
-        <button class="icon-btn" id="btn-chat-menu" aria-label="更多操作"><svg class="i"><use href="#i-dots"/></svg></button>
+        <button class="icon-btn" id="btn-chat-stop" aria-label="停止生成" data-i18n-aria-label="stopGeneration" hidden><svg class="i stop-icon"><use href="#i-stop"/></svg></button>
+        <button class="icon-btn" id="btn-chat-menu" aria-label="更多操作" data-i18n-aria-label="moreActions"><svg class="i"><use href="#i-dots"/></svg></button>
       </div>
     </header>
 
     <div class="chat-scroll" id="chat-scroll">
       <div class="chat-inner">
-        <button class="load-older" id="btn-older" hidden><span class="spinner"></span><span>加载更早的消息</span></button>
+        <button class="load-older" id="btn-older" hidden><span class="spinner"></span><span><span data-i18n="loadEarlier">加载更早的消息</span></span></button>
         <div class="messages" id="messages"></div>
         <div class="welcome" id="welcome" hidden>
           <div class="welcome-mark"><svg class="logo"><use href="#whale"/></svg></div>
-          <h1 class="welcome-title">开始新的对话</h1>
-          <p class="welcome-sub" id="welcome-sub">DSH 可以读写文件、运行命令、搜索网页。选择一个工作目录，然后告诉它你想做什么。</p>
+          <h1 class="welcome-title"><span data-i18n="startNewChat">开始新的对话</span></h1>
+          <p class="welcome-sub" id="welcome-sub"><span data-i18n="welcome">DSH 可以读写文件、运行命令、搜索网页。选择一个工作目录，然后告诉它你想做什么。</span></p>
           <div class="welcome-chips" id="welcome-chips">
-            <button class="suggest" data-suggest="介绍一下这个项目"><svg class="i"><use href="#i-spark"/></svg>介绍一下这个项目</button>
-            <button class="suggest" data-suggest="运行测试并修复失败项"><svg class="i"><use href="#i-terminal"/></svg>运行测试并修复失败项</button>
-            <button class="suggest" data-suggest="总结这个目录最近的文件改动"><svg class="i"><use href="#i-file"/></svg>总结最近的文件改动</button>
+            <button class="suggest" data-suggest="介绍一下这个项目" data-i18n-suggest="suggestIntro"><svg class="i"><use href="#i-spark"/></svg><span data-i18n="suggestIntro">介绍一下这个项目</span></button>
+            <button class="suggest" data-suggest="运行测试并修复失败项" data-i18n-suggest="suggestTests"><svg class="i"><use href="#i-terminal"/></svg><span data-i18n="suggestTests">运行测试并修复失败项</span></button>
+            <button class="suggest" data-suggest="总结这个目录最近的文件改动" data-i18n-suggest="suggestChangesPrompt"><svg class="i"><use href="#i-file"/></svg><span data-i18n="suggestChanges">总结最近的文件改动</span></button>
           </div>
         </div>
       </div>
     </div>
 
-    <button class="jump-bottom" id="btn-jump" hidden aria-label="跳到最新"><svg class="i"><use href="#i-down"/></svg></button>
+    <button class="jump-bottom" id="btn-jump" hidden aria-label="跳到最新" data-i18n-aria-label="jumpLatest"><svg class="i"><use href="#i-down"/></svg></button>
 
     <div class="composer-wrap" id="composer-wrap">
       <div class="run-status" id="run-status" hidden>
         <span class="pulse-dot"></span>
-        <span id="run-status-text">正在生成…</span>
+        <span id="run-status-text"><span data-i18n="generating">正在生成…</span></span>
         <span class="run-sep"></span>
-        <button class="stop-link" id="btn-stop-inline">停止</button>
+        <button class="stop-link" id="btn-stop-inline"><span data-i18n="stop">停止</span></button>
       </div>
       <div class="composer" id="composer">
         <div class="composer-chips" id="composer-chips" hidden>
@@ -134,19 +134,19 @@
           <button class="chip" id="chip-model" hidden><svg class="i"><use href="#i-chip"/></svg><span id="chip-model-text"></span></button>
         </div>
         <div class="composer-row">
-          <textarea id="input" rows="1" placeholder="发消息给 DSH…" enterkeyhint="send" autocomplete="off" autocapitalize="sentences" spellcheck="false"></textarea>
-          <button class="send-btn" id="btn-send" disabled aria-label="发送"><svg class="i"><use href="#i-send"/></svg></button>
+          <textarea id="input" rows="1" placeholder="发消息给 DSH…" data-i18n-placeholder="messagePlaceholder" enterkeyhint="send" autocomplete="off" autocapitalize="sentences" spellcheck="false"></textarea>
+          <button class="send-btn" id="btn-send" disabled aria-label="发送" data-i18n-aria-label="send"><svg class="i"><use href="#i-send"/></svg></button>
         </div>
       </div>
-      <div class="composer-hint" id="composer-hint">Enter 发送 · Shift + Enter 换行</div>
+      <div class="composer-hint" id="composer-hint"><span data-i18n="sendHint">Enter 发送 · Shift + Enter 换行</span></div>
     </div>
   </section>
 
-  <section class="view view-settings" id="view-settings" data-view="settings" aria-label="设置" hidden>
+  <section class="view view-settings" id="view-settings" data-view="settings" aria-label="设置" data-i18n-aria-label="settings" hidden>
     <header class="topbar">
       <div class="brand">
-        <button class="icon-btn" id="btn-settings-back" aria-label="返回"><svg class="i"><use href="#i-back"/></svg></button>
-        <div class="brand-copy"><div class="brand-title">设置</div></div>
+        <button class="icon-btn" id="btn-settings-back" aria-label="返回" data-i18n-aria-label="back"><svg class="i"><use href="#i-back"/></svg></button>
+        <div class="brand-copy"><div class="brand-title"><span data-i18n="settings">设置</span></div></div>
       </div>
     </header>
     <div class="settings-scroll" id="settings-body"></div>
@@ -165,6 +165,7 @@
   </div>
 </div>
 
+<script src="i18n.js"></script>
 <script src="markdown.js"></script>
 <script src="api.js"></script>
 <script src="transcript.js"></script>

@@ -1,5 +1,6 @@
 package ai.deepseek.dshclient;
 
+import android.content.Context;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -81,7 +82,7 @@ final class ServerAuth {
      *   - "http://192.168.1.10:3080" / "192.168.1.10:3080" (origin only)
      *   - separate token, or token field containing the full URL.
      */
-    static Cfg parseConfig(String primaryInput, String tokenInput) {
+    static Cfg parseConfig(Context context, String primaryInput, String tokenInput) {
         String primary = primaryInput == null ? "" : primaryInput.trim();
         String token = tokenInput == null ? "" : tokenInput.trim();
 
@@ -122,13 +123,13 @@ final class ServerAuth {
         }
 
         if (primary.isEmpty()) {
-            throw new IllegalArgumentException("请输入服务器地址 / Server URL is required");
+            throw new IllegalArgumentException(context.getString(R.string.server_required));
         }
         if (token.isEmpty()) {
             throw new IllegalArgumentException(
-                    "请输入令牌 / Token is required (it is printed by `dsh web` in the terminal)");
+                    context.getString(R.string.token_required_hint));
         }
-        return new Cfg(normalizeOrigin(primary), token);
+        return new Cfg(normalizeOrigin(context, primary), token);
     }
 
     private static String tokenFromUrl(String s) {
@@ -150,7 +151,7 @@ final class ServerAuth {
         return t.trim();
     }
 
-    static String normalizeOrigin(String raw) {
+    static String normalizeOrigin(Context context, String raw) {
         String s = raw == null ? "" : raw.trim();
         if (!s.contains("://")) {
             s = "http://" + s;
@@ -159,32 +160,32 @@ final class ServerAuth {
             URI u = new URI(s);
             String scheme = u.getScheme() == null ? "http" : u.getScheme().toLowerCase(Locale.ROOT);
             if (!"http".equals(scheme) && !"https".equals(scheme)) {
-                throw new IllegalArgumentException("只支持 http:// 或 https:// 地址");
+                throw new IllegalArgumentException(context.getString(R.string.http_required));
             }
             String host = u.getHost();
             if (host == null || host.isEmpty()) {
-                throw new IllegalArgumentException("服务器地址格式不正确 / Bad server URL");
+                throw new IllegalArgumentException(context.getString(R.string.invalid_server_url));
             }
             int port = u.getPort();
             return scheme + "://" + host + (port == -1 ? "" : ":" + port);
         } catch (URISyntaxException e) {
-            throw new IllegalArgumentException("服务器地址格式不正确 / Bad server URL: " + e.getMessage());
+            throw new IllegalArgumentException(context.getString(R.string.invalid_server_url_detail) + e.getMessage());
         }
     }
 
     // ---------------------------------------------------------------- network
 
-    static Result login(String rawOrigin, String rawToken) {
+    static Result login(Context context, String rawOrigin, String rawToken) {
         final String origin;
         final String token;
         try {
-            origin = normalizeOrigin(rawOrigin);
+            origin = normalizeOrigin(context, rawOrigin);
             token = rawToken == null ? "" : rawToken.trim();
         } catch (IllegalArgumentException e) {
             return Result.fail(e.getMessage());
         }
         if (token.isEmpty()) {
-            return Result.fail("请输入令牌 / Token is required");
+            return Result.fail(context.getString(R.string.token_required));
         }
 
         HttpURLConnection conn = null;
@@ -200,23 +201,23 @@ final class ServerAuth {
             Log.i(TAG, "GET " + origin + "/?token=*** -> HTTP " + code);
 
             if (code == 401 || code == 403) {
-                return Result.fail("令牌无效或已过期 / Token rejected (HTTP " + code + ")");
+                return Result.fail(context.getString(R.string.token_rejected) + code + ")");
             }
             if (code >= 400) {
-                return Result.fail("服务器返回错误 HTTP " + code + " / Server error");
+                return Result.fail(context.getString(R.string.http_server_error) + code + context.getString(R.string.server_error_suffix));
             }
 
             String pair = findAuthCookie(conn.getHeaderFields());
             if (pair == null || pair.isEmpty()) {
-                return Result.fail("服务器没有返回登录 Cookie / No auth cookie (HTTP " + code
-                        + "). Is the token current?");
+                return Result.fail(context.getString(R.string.no_auth_cookie) + code
+                        + context.getString(R.string.auth_cookie_suffix));
             }
 
             String cookieName = pair.substring(0, Math.max(0, pair.indexOf('=')));
             String cookie = pair + "; Path=/; HttpOnly; SameSite=Strict";
 
             // Verify the cookie actually authenticates before trusting it.
-            String verifyError = verifySessionList(origin, pair);
+            String verifyError = verifySessionList(context, origin, pair);
             if (verifyError != null) {
                 return Result.fail(verifyError);
             }
@@ -226,7 +227,7 @@ final class ServerAuth {
             Log.i(TAG, "auth OK: " + detail);
             return new Result(true, null, cookie, origin, detail);
         } catch (Exception e) {
-            String msg = friendly(e);
+            String msg = friendly(context, e);
             Log.w(TAG, "auth failed: " + msg, e);
             return Result.fail(msg);
         } finally {
@@ -237,7 +238,7 @@ final class ServerAuth {
     }
 
     /** Returns null when the cookie works, otherwise a user-facing error. */
-    private static String verifySessionList(String origin, String cookiePair) {
+    private static String verifySessionList(Context context, String origin, String cookiePair) {
         HttpURLConnection conn = null;
         try {
             String rpcId = UUID.randomUUID().toString();
@@ -265,17 +266,17 @@ final class ServerAuth {
             Log.i(TAG, "POST /api/session/list -> HTTP " + code + " " + abbreviate(response));
 
             if (code == 401 || code == 403) {
-                return "令牌无效或已过期 / Cookie rejected by server (HTTP " + code + ")";
+                return context.getString(R.string.cookie_rejected) + code + ")";
             }
             if (code >= 400) {
-                return "验证会话失败 HTTP " + code + " / Session check failed";
+                return context.getString(R.string.http_session_error) + code + context.getString(R.string.session_error_suffix);
             }
             if (response == null || !response.contains("\"ok\":true")) {
-                return "会话接口返回异常 / Unexpected session/list response";
+                return context.getString(R.string.invalid_session_response);
             }
             return null;
         } catch (Exception e) {
-            return "验证会话失败 / Verify failed: " + friendly(e);
+            return context.getString(R.string.verify_failed) + friendly(context, e);
         } finally {
             if (conn != null) {
                 conn.disconnect();
@@ -339,17 +340,17 @@ final class ServerAuth {
         return one.length() <= 240 ? one : one.substring(0, 240) + "…";
     }
 
-    private static String friendly(Exception e) {
+    private static String friendly(Context context, Exception e) {
         if (e instanceof SocketTimeoutException) {
-            return "连接服务器超时 / Timed out";
+            return context.getString(R.string.connection_timeout);
         }
         if (e instanceof ConnectException) {
-            return "无法连接服务器，请检查地址与网络 / Cannot connect to server";
+            return context.getString(R.string.cannot_connect);
         }
         if (e instanceof UnknownHostException) {
-            return "无法解析服务器地址 / Unknown host";
+            return context.getString(R.string.unknown_host);
         }
         String m = e.getMessage();
-        return "网络错误 / Network error: " + (m == null ? e.getClass().getSimpleName() : m);
+        return context.getString(R.string.network_error) + (m == null ? e.getClass().getSimpleName() : m);
     }
 }

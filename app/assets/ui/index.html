@@ -1195,20 +1195,20 @@ textarea.field { resize: none; line-height: 1.55; }
 <div id="app" data-ready="0">
   <div class="bg-aura" aria-hidden="true"></div>
 
-  <section class="view view-home" id="view-home" data-view="home" aria-label="会话列表">
+  <section class="view view-home" id="view-home" data-view="home" aria-label="会话列表" data-i18n-aria-label="sessionList">
     <header class="topbar">
       <div class="brand">
         <span class="brand-mark" aria-hidden="true"><svg class="logo"><use href="#whale"/></svg></span>
         <div class="brand-copy">
           <div class="brand-title">DeepSeek Harness</div>
-          <div class="brand-sub" id="brand-sub">远程 Agent 客户端</div>
+          <div class="brand-sub" id="brand-sub"><span data-i18n="remoteClient">远程 Agent 客户端</span></div>
         </div>
       </div>
       <div class="topbar-actions">
-        <span class="conn-badge" id="conn-badge" data-state="connecting" title="连接状态">
-          <span class="conn-dot"></span><span class="conn-text" id="conn-text">连接中</span>
+        <span class="conn-badge" id="conn-badge" data-state="connecting" title="连接状态" data-i18n-title="connectionStatus">
+          <span class="conn-dot"></span><span class="conn-text" id="conn-text"><span data-i18n="connecting">连接中</span></span>
         </span>
-        <button class="icon-btn" id="btn-settings" aria-label="设置"><svg class="i"><use href="#i-gear"/></svg></button>
+        <button class="icon-btn" id="btn-settings" aria-label="设置" data-i18n-aria-label="settings"><svg class="i"><use href="#i-gear"/></svg></button>
       </div>
     </header>
 
@@ -1216,72 +1216,72 @@ textarea.field { resize: none; line-height: 1.55; }
       <button class="new-chat-card" id="btn-new-chat">
         <span class="new-chat-icon"><svg class="i"><use href="#i-plus"/></svg></span>
         <span class="new-chat-copy">
-          <span class="new-chat-title">新对话</span>
-          <span class="new-chat-sub">发送消息，开始一个任务</span>
+          <span class="new-chat-title"><span data-i18n="newChat">新对话</span></span>
+          <span class="new-chat-sub"><span data-i18n="newChatHint">发送消息，开始一个任务</span></span>
         </span>
         <svg class="i new-chat-chevron"><use href="#i-chevron"/></svg>
       </button>
 
       <div class="list-head" id="list-head" hidden>
-        <span class="list-head-label">最近的对话</span>
-        <button class="text-btn" id="btn-refresh"><svg class="i"><use href="#i-refresh"/></svg><span>刷新</span></button>
+        <span class="list-head-label"><span data-i18n="recentChats">最近的对话</span></span>
+        <button class="text-btn" id="btn-refresh"><svg class="i"><use href="#i-refresh"/></svg><span><span data-i18n="refresh">刷新</span></span></button>
       </div>
 
       <div class="session-list" id="session-list" role="list"></div>
 
       <div class="empty-home" id="empty-home" hidden>
         <div class="empty-mark"><svg class="logo"><use href="#whale"/></svg></div>
-        <div class="empty-title">还没有对话</div>
-        <div class="empty-sub">在你的电脑上运行 dsh web，这里会显示所有会话。</div>
-        <button class="btn btn-primary" id="btn-empty-new"><svg class="i"><use href="#i-plus"/></svg>开始新对话</button>
+        <div class="empty-title"><span data-i18n="noChats">还没有对话</span></div>
+        <div class="empty-sub"><span data-i18n="noChatsHint">在你的电脑上运行 dsh web，这里会显示所有会话。</span></div>
+        <button class="btn btn-primary" id="btn-empty-new"><svg class="i"><use href="#i-plus"/></svg><span data-i18n="startChat">开始新对话</span></button>
       </div>
 
       <div class="home-foot">Powered by DeepSeek Harness</div>
     </div>
   </section>
 
-  <section class="view view-chat" id="view-chat" data-view="chat" aria-label="对话" hidden>
+  <section class="view view-chat" id="view-chat" data-view="chat" aria-label="对话" data-i18n-aria-label="chat" hidden>
     <header class="chat-topbar">
-      <button class="icon-btn only-narrow" id="btn-chat-back" aria-label="返回"><svg class="i"><use href="#i-back"/></svg></button>
+      <button class="icon-btn only-narrow" id="btn-chat-back" aria-label="返回" data-i18n-aria-label="back"><svg class="i"><use href="#i-back"/></svg></button>
       <div class="chat-heading">
-        <div class="chat-title" id="chat-title">新对话</div>
-        <button class="chat-sub" id="btn-chat-model" title="选择模型">
+        <div class="chat-title" id="chat-title"><span data-i18n="newChat">新对话</span></div>
+        <button class="chat-sub" id="btn-chat-model" title="选择模型" data-i18n-title="chooseModel">
           <span class="status-dot" id="chat-status-dot" data-state="idle"></span>
           <span id="chat-sub-text">deepseek-flash</span>
           <svg class="i tiny"><use href="#i-chevron"/></svg>
         </button>
       </div>
       <div class="chat-actions">
-        <button class="icon-btn" id="btn-chat-stop" aria-label="停止生成" hidden><svg class="i stop-icon"><use href="#i-stop"/></svg></button>
-        <button class="icon-btn" id="btn-chat-menu" aria-label="更多操作"><svg class="i"><use href="#i-dots"/></svg></button>
+        <button class="icon-btn" id="btn-chat-stop" aria-label="停止生成" data-i18n-aria-label="stopGeneration" hidden><svg class="i stop-icon"><use href="#i-stop"/></svg></button>
+        <button class="icon-btn" id="btn-chat-menu" aria-label="更多操作" data-i18n-aria-label="moreActions"><svg class="i"><use href="#i-dots"/></svg></button>
       </div>
     </header>
 
     <div class="chat-scroll" id="chat-scroll">
       <div class="chat-inner">
-        <button class="load-older" id="btn-older" hidden><span class="spinner"></span><span>加载更早的消息</span></button>
+        <button class="load-older" id="btn-older" hidden><span class="spinner"></span><span><span data-i18n="loadEarlier">加载更早的消息</span></span></button>
         <div class="messages" id="messages"></div>
         <div class="welcome" id="welcome" hidden>
           <div class="welcome-mark"><svg class="logo"><use href="#whale"/></svg></div>
-          <h1 class="welcome-title">开始新的对话</h1>
-          <p class="welcome-sub" id="welcome-sub">DSH 可以读写文件、运行命令、搜索网页。选择一个工作目录，然后告诉它你想做什么。</p>
+          <h1 class="welcome-title"><span data-i18n="startNewChat">开始新的对话</span></h1>
+          <p class="welcome-sub" id="welcome-sub"><span data-i18n="welcome">DSH 可以读写文件、运行命令、搜索网页。选择一个工作目录，然后告诉它你想做什么。</span></p>
           <div class="welcome-chips" id="welcome-chips">
-            <button class="suggest" data-suggest="介绍一下这个项目"><svg class="i"><use href="#i-spark"/></svg>介绍一下这个项目</button>
-            <button class="suggest" data-suggest="运行测试并修复失败项"><svg class="i"><use href="#i-terminal"/></svg>运行测试并修复失败项</button>
-            <button class="suggest" data-suggest="总结这个目录最近的文件改动"><svg class="i"><use href="#i-file"/></svg>总结最近的文件改动</button>
+            <button class="suggest" data-suggest="介绍一下这个项目" data-i18n-suggest="suggestIntro"><svg class="i"><use href="#i-spark"/></svg><span data-i18n="suggestIntro">介绍一下这个项目</span></button>
+            <button class="suggest" data-suggest="运行测试并修复失败项" data-i18n-suggest="suggestTests"><svg class="i"><use href="#i-terminal"/></svg><span data-i18n="suggestTests">运行测试并修复失败项</span></button>
+            <button class="suggest" data-suggest="总结这个目录最近的文件改动" data-i18n-suggest="suggestChangesPrompt"><svg class="i"><use href="#i-file"/></svg><span data-i18n="suggestChanges">总结最近的文件改动</span></button>
           </div>
         </div>
       </div>
     </div>
 
-    <button class="jump-bottom" id="btn-jump" hidden aria-label="跳到最新"><svg class="i"><use href="#i-down"/></svg></button>
+    <button class="jump-bottom" id="btn-jump" hidden aria-label="跳到最新" data-i18n-aria-label="jumpLatest"><svg class="i"><use href="#i-down"/></svg></button>
 
     <div class="composer-wrap" id="composer-wrap">
       <div class="run-status" id="run-status" hidden>
         <span class="pulse-dot"></span>
-        <span id="run-status-text">正在生成…</span>
+        <span id="run-status-text"><span data-i18n="generating">正在生成…</span></span>
         <span class="run-sep"></span>
-        <button class="stop-link" id="btn-stop-inline">停止</button>
+        <button class="stop-link" id="btn-stop-inline"><span data-i18n="stop">停止</span></button>
       </div>
       <div class="composer" id="composer">
         <div class="composer-chips" id="composer-chips" hidden>
@@ -1289,19 +1289,19 @@ textarea.field { resize: none; line-height: 1.55; }
           <button class="chip" id="chip-model" hidden><svg class="i"><use href="#i-chip"/></svg><span id="chip-model-text"></span></button>
         </div>
         <div class="composer-row">
-          <textarea id="input" rows="1" placeholder="发消息给 DSH…" enterkeyhint="send" autocomplete="off" autocapitalize="sentences" spellcheck="false"></textarea>
-          <button class="send-btn" id="btn-send" disabled aria-label="发送"><svg class="i"><use href="#i-send"/></svg></button>
+          <textarea id="input" rows="1" placeholder="发消息给 DSH…" data-i18n-placeholder="messagePlaceholder" enterkeyhint="send" autocomplete="off" autocapitalize="sentences" spellcheck="false"></textarea>
+          <button class="send-btn" id="btn-send" disabled aria-label="发送" data-i18n-aria-label="send"><svg class="i"><use href="#i-send"/></svg></button>
         </div>
       </div>
-      <div class="composer-hint" id="composer-hint">Enter 发送 · Shift + Enter 换行</div>
+      <div class="composer-hint" id="composer-hint"><span data-i18n="sendHint">Enter 发送 · Shift + Enter 换行</span></div>
     </div>
   </section>
 
-  <section class="view view-settings" id="view-settings" data-view="settings" aria-label="设置" hidden>
+  <section class="view view-settings" id="view-settings" data-view="settings" aria-label="设置" data-i18n-aria-label="settings" hidden>
     <header class="topbar">
       <div class="brand">
-        <button class="icon-btn" id="btn-settings-back" aria-label="返回"><svg class="i"><use href="#i-back"/></svg></button>
-        <div class="brand-copy"><div class="brand-title">设置</div></div>
+        <button class="icon-btn" id="btn-settings-back" aria-label="返回" data-i18n-aria-label="back"><svg class="i"><use href="#i-back"/></svg></button>
+        <div class="brand-copy"><div class="brand-title"><span data-i18n="settings">设置</span></div></div>
       </div>
     </header>
     <div class="settings-scroll" id="settings-body"></div>
@@ -1320,6 +1320,300 @@ textarea.field { resize: none; line-height: 1.55; }
   </div>
 </div>
 
+<script>
+// inlined from i18n.js
+/* DSH Mobile UI translations. Classic script for Android WebView 91. */
+(function () {
+  'use strict';
+
+  var zh = {
+    sessions: "会话",
+    sessionList: "会话列表",
+    remoteClient: "远程 Agent 客户端",
+    connectionStatus: "连接状态",
+    connecting: "连接中",
+    connected: "已连接",
+    reconnecting: "重连中",
+    offline: "未连接",
+    settings: "设置",
+    newChat: "新对话",
+    newChatHint: "发送消息，开始一个任务",
+    recentChats: "最近的对话",
+    refresh: "刷新",
+    noChats: "还没有对话",
+    noChatsHint: "在你的电脑上运行 dsh web，这里会显示所有会话。",
+    startChat: "开始新对话",
+    chat: "对话",
+    back: "返回",
+    chooseModel: "选择模型",
+    stopGeneration: "停止生成",
+    moreActions: "更多操作",
+    loadEarlier: "加载更早的消息",
+    startNewChat: "开始新的对话",
+    welcome: "DSH 可以读写文件、运行命令、搜索网页。选择一个工作目录，然后告诉它你想做什么。",
+    suggestIntro: "介绍一下这个项目",
+    suggestTests: "运行测试并修复失败项",
+    suggestChangesPrompt: "总结这个目录最近的文件改动",
+    suggestChanges: "总结最近的文件改动",
+    jumpLatest: "跳到最新",
+    generating: "正在生成…",
+    stop: "停止",
+    messagePlaceholder: "发消息给 DSH…",
+    send: "发送",
+    sendHint: "Enter 发送 · Shift + Enter 换行",
+    loadFailed: "加载失败",
+    loadSessionsFailed: "无法加载会话",
+    connectionLost: "连接已断开，正在尝试重连…",
+    retryLoading: "加载失败，点击重试",
+    networkError: "网络错误",
+    untitledChat: "未命名对话",
+    running: "运行中",
+    openChatFailed: "无法打开会话：",
+    connectionFailed: "连接失败",
+    taskFailed: "DSH 任务失败",
+    taskCancelled: "DSH 任务已停止",
+    taskComplete: "DSH 任务完成",
+    chooseWorkspace: "选择工作目录",
+    thinking: "正在思考…",
+    reasoning: "思考过程",
+    generationInterrupted: "生成已中断",
+    arguments: "参数",
+    result: "结果",
+    noDetails: "暂无详情",
+    clientNotReady: "客户端未就绪",
+    createChatFailed: "创建会话失败",
+    sendFailed: "发送失败",
+    stopRequested: "已请求停止",
+    stopFailed: "停止失败",
+    chatActions: "对话操作",
+    renameChat: "重命名对话",
+    workspace: "工作目录",
+    chatNamePlaceholder: "给这个对话起个名字",
+    cancel: "取消",
+    save: "保存",
+    titleRequired: "标题不能为空",
+    renamed: "已重命名",
+    renameFailed: "重命名失败",
+    sendFirst: "新对话还没有创建，先发送一条消息吧",
+    noRecentWorkspaces: "还没有使用过的目录，输入一个绝对路径开始。",
+    workspaceHint: "DSH 会在这个目录里读写文件、运行命令。",
+    workspacePath: "目录路径",
+    workspacePlaceholder: "/root/我的项目",
+    confirm: "确定",
+    absolutePathRequired: "请输入以 / 开头的绝对路径",
+    modelsUnavailable: "模型列表不可用",
+    loadingModels: "正在加载模型列表…",
+    loadFailedPrefix: "加载失败：",
+    unknownError: "未知错误",
+    noModels: "没有可用的模型。",
+    supportsReasoning: " · 支持推理强度",
+    currentChatOnly: "仅影响当前对话。",
+    reasoningEffort: "推理强度",
+    modelChanged: "已切换模型",
+    changeModelFailed: "切换模型失败",
+    newChatModel: "新对话将使用 ",
+    fontSmall: "小",
+    fontStandard: "标准",
+    fontLarge: "大",
+    fontExtraLarge: "特大",
+    fontSmallHint: "更紧凑，一屏显示更多内容",
+    fontStandardHint: "默认，比旧版本略大",
+    fontLargeHint: "更易阅读",
+    fontExtraLargeHint: "适合远距离 / 视力不便时",
+    fontSize: "字体大小",
+    fontSizeHint: "仅影响 DSH App 的界面文字，立即生效。",
+    fontUnsupported: "当前环境不支持调整字体",
+    fontSizePrefix: "字体大小：",
+    connection: "连接",
+    server: "服务器",
+    status: "状态",
+    reconnect: "重新连接",
+    tokenNotice: "令牌由系统安全存储，不会显示在这里。连接失败时请回到电脑上查看 dsh web 打印的新链接。",
+    display: "显示",
+    fontSavedLocally: "字体大小保存在本机，调整后立即生效。",
+    refreshSessions: "立即刷新会话列表",
+    sessionCountSuffix: " 个",
+    changeServer: "更换服务器 / 重新登录",
+    loginAgainHint: "重新登录会清除本机保存的地址与令牌，需要重新粘贴 dsh web 的链接。",
+    about: "关于",
+    aboutClient: "为 DeepSeek Harness 打造的轻量 Android 客户端",
+    aboutFeatures: "会话、流式回复与工具调用状态",
+    reconnectingToast: "正在重新连接…",
+    refreshing: "正在刷新…",
+    useApp: "请在 App 中操作",
+    authExpired: "连接已失效",
+    authExpiredHint: "令牌可能已经过期，或服务器地址已变更。请重新粘贴 dsh web 打印的链接。",
+    retry: "重试",
+    loginAgain: "重新登录",
+    loginAgainInApp: "请在 App 中重新登录",
+    justNow: "刚刚"
+  };
+
+  var ru = {
+    sessions: "Диалоги",
+    sessionList: "Список диалогов",
+    remoteClient: "Клиент удалённого агента",
+    connectionStatus: "Состояние подключения",
+    connecting: "Подключение",
+    connected: "Подключено",
+    reconnecting: "Переподключение",
+    offline: "Нет подключения",
+    settings: "Настройки",
+    newChat: "Новый диалог",
+    newChatHint: "Отправьте сообщение, чтобы начать задачу",
+    recentChats: "Недавние диалоги",
+    refresh: "Обновить",
+    noChats: "Диалогов пока нет",
+    noChatsHint: "Запустите dsh web на компьютере, и здесь появятся ваши диалоги.",
+    startChat: "Начать диалог",
+    chat: "Диалог",
+    back: "Назад",
+    chooseModel: "Выбрать модель",
+    stopGeneration: "Остановить генерацию",
+    moreActions: "Другие действия",
+    loadEarlier: "Загрузить предыдущие сообщения",
+    startNewChat: "Начните новый диалог",
+    welcome: "DSH умеет читать и изменять файлы, выполнять команды и искать в интернете. Выберите рабочую папку и опишите задачу.",
+    suggestIntro: "Расскажи об этом проекте",
+    suggestTests: "Запусти тесты и исправь ошибки",
+    suggestChangesPrompt: "Опиши последние изменения файлов в этой папке",
+    suggestChanges: "Опиши последние изменения файлов",
+    jumpLatest: "К последнему сообщению",
+    generating: "Генерация…",
+    stop: "Остановить",
+    messagePlaceholder: "Сообщение для DSH…",
+    send: "Отправить",
+    sendHint: "Enter — отправить · Shift + Enter — новая строка",
+    loadFailed: "Не удалось загрузить",
+    loadSessionsFailed: "Не удалось загрузить диалоги",
+    connectionLost: "Связь потеряна. Переподключение…",
+    retryLoading: "Ошибка загрузки. Нажмите, чтобы повторить",
+    networkError: "Ошибка сети",
+    untitledChat: "Диалог без названия",
+    running: "Выполняется",
+    openChatFailed: "Не удалось открыть диалог. ",
+    connectionFailed: "Не удалось подключиться",
+    taskFailed: "Ошибка задачи DSH",
+    taskCancelled: "Задача DSH остановлена",
+    taskComplete: "Задача DSH завершена",
+    chooseWorkspace: "Выбрать рабочую папку",
+    thinking: "Размышление…",
+    reasoning: "Ход рассуждений",
+    generationInterrupted: "Генерация прервана",
+    arguments: "Аргументы",
+    result: "Результат",
+    noDetails: "Подробностей пока нет",
+    clientNotReady: "Клиент ещё не готов",
+    createChatFailed: "Не удалось создать диалог",
+    sendFailed: "Не удалось отправить сообщение",
+    stopRequested: "Запрошена остановка",
+    stopFailed: "Не удалось остановить",
+    chatActions: "Действия с диалогом",
+    renameChat: "Переименовать диалог",
+    workspace: "Рабочая папка",
+    chatNamePlaceholder: "Название диалога",
+    cancel: "Отмена",
+    save: "Сохранить",
+    titleRequired: "Введите название",
+    renamed: "Диалог переименован",
+    renameFailed: "Не удалось переименовать",
+    sendFirst: "Сначала отправьте сообщение, чтобы создать диалог",
+    noRecentWorkspaces: "Недавних папок пока нет. Введите абсолютный путь.",
+    workspaceHint: "DSH будет читать и изменять файлы и выполнять команды в этой папке.",
+    workspacePath: "Путь к папке",
+    workspacePlaceholder: "/root/my-project",
+    confirm: "ОК",
+    absolutePathRequired: "Введите абсолютный путь, начинающийся с /",
+    modelsUnavailable: "Список моделей недоступен",
+    loadingModels: "Загрузка моделей…",
+    loadFailedPrefix: "Ошибка загрузки. ",
+    unknownError: "Неизвестная ошибка",
+    noModels: "Нет доступных моделей.",
+    supportsReasoning: " · Настраиваемая глубина рассуждений",
+    currentChatOnly: "Применяется только к текущему диалогу.",
+    reasoningEffort: "Глубина рассуждений",
+    modelChanged: "Модель изменена",
+    changeModelFailed: "Не удалось сменить модель",
+    newChatModel: "Модель нового диалога — ",
+    fontSmall: "Мелкий",
+    fontStandard: "Обычный",
+    fontLarge: "Крупный",
+    fontExtraLarge: "Очень крупный",
+    fontSmallHint: "Больше содержимого на экране",
+    fontStandardHint: "По умолчанию, чуть крупнее прежнего",
+    fontLargeHint: "Удобнее читать",
+    fontExtraLargeHint: "Для чтения с расстояния или при слабом зрении",
+    fontSize: "Размер шрифта",
+    fontSizeHint: "Применяется сразу к тексту интерфейса DSH.",
+    fontUnsupported: "Изменение размера шрифта здесь недоступно",
+    fontSizePrefix: "Размер шрифта — ",
+    connection: "Подключение",
+    server: "Сервер",
+    status: "Состояние",
+    reconnect: "Подключиться снова",
+    tokenNotice: "Токен хранится на устройстве и здесь не отображается. При ошибке подключения используйте новую ссылку из вывода dsh web на компьютере.",
+    display: "Отображение",
+    fontSavedLocally: "Размер шрифта сохраняется на устройстве и применяется сразу.",
+    refreshSessions: "Обновить список диалогов",
+    sessionCountSuffix: "",
+    changeServer: "Сменить сервер / войти снова",
+    loginAgainHint: "При повторном входе сохранённые адрес и токен будут удалены. Понадобится ссылка из dsh web.",
+    about: "О приложении",
+    aboutClient: "Лёгкий Android-клиент для DeepSeek Harness",
+    aboutFeatures: "Диалоги, потоковые ответы и состояние инструментов",
+    reconnectingToast: "Переподключение…",
+    refreshing: "Обновление…",
+    useApp: "Откройте эту функцию в приложении",
+    authExpired: "Подключение недействительно",
+    authExpiredHint: "Возможно, токен истёк или адрес сервера изменился. Вставьте новую ссылку из вывода dsh web.",
+    retry: "Повторить",
+    loginAgain: "Войти снова",
+    loginAgainInApp: "Войдите снова через приложение",
+    justNow: "Только что"
+  };
+
+  var language = /^ru(?:-|$)/i.test(navigator.language || '') ? 'ru' : 'zh';
+
+  function t(key) {
+    var dictionary = language === 'ru' ? ru : zh;
+    return Object.prototype.hasOwnProperty.call(dictionary, key) ? dictionary[key] : (zh[key] || '');
+  }
+
+  function localize(root) {
+    document.documentElement.lang = language === 'ru' ? 'ru' : 'zh-CN';
+    Array.prototype.forEach.call(root.querySelectorAll('[data-i18n]'), function (node) {
+      node.textContent = t(node.getAttribute('data-i18n'));
+    });
+    ['aria-label', 'title', 'placeholder', 'suggest'].forEach(function (attribute) {
+      var marker = 'data-i18n-' + attribute;
+      Array.prototype.forEach.call(root.querySelectorAll('[' + marker + ']'), function (node) {
+        node.setAttribute(attribute === 'suggest' ? 'data-suggest' : attribute, t(node.getAttribute(marker)));
+      });
+    });
+  }
+
+  function relativeTime(timestamp) {
+    if (!timestamp) return '';
+    var elapsed = Math.max(0, Date.now() - timestamp);
+    if (elapsed < 60000) return t('justNow');
+    if (language === 'ru') {
+      var format = new Intl.RelativeTimeFormat('ru', { numeric: 'always' });
+      if (elapsed < 3600000) return format.format(-Math.floor(elapsed / 60000), 'minute');
+      if (elapsed < 86400000) return format.format(-Math.floor(elapsed / 3600000), 'hour');
+      if (elapsed < 604800000) return format.format(-Math.floor(elapsed / 86400000), 'day');
+      return new Date(timestamp).toLocaleDateString('ru');
+    }
+    if (elapsed < 3600000) return Math.floor(elapsed / 60000) + ' 分钟前';
+    if (elapsed < 86400000) return Math.floor(elapsed / 3600000) + ' 小时前';
+    if (elapsed < 604800000) return Math.floor(elapsed / 86400000) + ' 天前';
+    var date = new Date(timestamp);
+    return (date.getMonth() + 1) + '月' + date.getDate() + '日';
+  }
+
+  window.DSHI18n = { t: t, localize: localize, relativeTime: relativeTime };
+})();
+
+</script>
 <script>
 // inlined from markdown.js
 /* DSH Markdown — a small, safe, streaming-friendly renderer.
@@ -2915,6 +3209,8 @@ textarea.field { resize: none; line-height: 1.55; }
 (function () {
   'use strict';
 
+  var tr = window.DSHI18n.t;
+
   /* ---------------------------------------------------------------- utils */
 
   function $(sel, root) { return (root || document).querySelector(sel); }
@@ -2929,15 +3225,7 @@ textarea.field { resize: none; line-height: 1.55; }
     return parts.length ? parts[parts.length - 1] : path;
   }
   function relativeTime(ts) {
-    if (!ts) return '';
-    var d = Date.now() - ts;
-    if (d < 0) d = 0;
-    if (d < 60e3) return '刚刚';
-    if (d < 3600e3) return Math.floor(d / 60e3) + ' 分钟前';
-    if (d < 86400e3) return Math.floor(d / 3600e3) + ' 小时前';
-    if (d < 7 * 86400e3) return Math.floor(d / 86400e3) + ' 天前';
-    var date = new Date(ts);
-    return (date.getMonth() + 1) + '月' + date.getDate() + '日';
+    return window.DSHI18n.relativeTime(ts);
   }
   function prettyArgs(text) {
     if (!text) return '';
@@ -3051,6 +3339,7 @@ textarea.field { resize: none; line-height: 1.55; }
   /* ---------------------------------------------------------------- boot */
 
   function boot() {
+    window.DSHI18n.localize(document);
     refs();
     setupWide();
     bindGlobalEvents();
@@ -3159,10 +3448,10 @@ textarea.field { resize: none; line-height: 1.55; }
       if (!silent) setRefreshBusy(false);
     }, function (err) {
       state.listLoading = false;
-      state.listError = err || new Error('加载失败');
+      state.listError = err || new Error(tr('loadFailed'));
       renderHome();
       setRefreshBusy(false);
-      if (!silent) toast((err && err.message) || '无法加载会话');
+      if (!silent) toast((err && err.message) || tr('loadSessionsFailed'));
       if (!(err && err.code && /auth|credential/i.test(err.code))) scheduleFallback();
     });
   }
@@ -3194,14 +3483,14 @@ textarea.field { resize: none; line-height: 1.55; }
     state.connection = s;
     if (dom.connBadge) {
       dom.connBadge.setAttribute('data-state', s);
-      var map = { connecting: '连接中', connected: '已连接', reconnecting: '重连中', offline: '未连接' };
+      var map = { connecting: tr('connecting'), connected: tr('connected'), reconnecting: tr('reconnecting'), offline: tr('offline') };
       if (dom.connText) dom.connText.textContent = map[s] || s;
     }
     if (dom.chatStatusDot) {
       dom.chatStatusDot.setAttribute('data-state', s === 'connected' ? 'idle' : (s === 'offline' ? 'error' : 'running'));
     }
     if (s === 'offline' && state.screen === 'chat' && state.chat && !state.chat.streamError) {
-      state.chat.streamError = '连接已断开，正在尝试重连…';
+      state.chat.streamError = tr('connectionLost');
       renderChat();
     }
   }
@@ -3299,19 +3588,19 @@ textarea.field { resize: none; line-height: 1.55; }
     dom.emptyHome.hidden = hasAny || !!state.listError || !state.sessionsLoaded;
 
     if (state.listError) {
-      dom.list.innerHTML = '<button class="session-item" id="btn-retry-list"><span class="session-avatar">' + icon('refresh') + '</span><span class="session-body"><span class="session-title">加载失败，点击重试</span><span class="session-meta">' + esc(state.listError.message || '网络错误') + '</span></span></button>';
+      dom.list.innerHTML = '<button class="session-item" id="btn-retry-list"><span class="session-avatar">' + icon('refresh') + ('</span><span class="session-body"><span class="session-title">' + esc(tr('retryLoading')) + '</span><span class="session-meta">') + esc(state.listError.message || tr('networkError')) + '</span></span></button>';
       dom.listHead.hidden = true;
       dom.emptyHome.hidden = true;
     }
     if (dom.brandSub) {
-      dom.brandSub.textContent = state.connection === 'connected' ? (location.host || '已连接') : '远程 Agent 客户端';
+      dom.brandSub.textContent = state.connection === 'connected' ? (location.host || tr('connected')) : tr('remoteClient');
     }
   }
 
   function sessionRowHtml(s) {
-    var title = s.title || (s.cwd ? basename(s.cwd) : '未命名对话');
+    var title = s.title || (s.cwd ? basename(s.cwd) : tr('untitledChat'));
     var parts = [];
-    if (s.running) parts.push('<span class="session-running"><span class="pulse-dot"></span>运行中</span>');
+    if (s.running) parts.push(('<span class="session-running"><span class="pulse-dot"></span>' + esc(tr('running')) + '</span>'));
     if (s.cwd) parts.push('<span class="meta-path">' + esc(basename(s.cwd)) + '</span>');
     parts.push('<span>' + esc(relativeTime(s.updatedAt)) + '</span>');
     var meta = [];
@@ -3402,7 +3691,7 @@ textarea.field { resize: none; line-height: 1.55; }
       Promise.resolve(state.client.follow(sessionId)).then(function () {
         /* snapshot arrives through onSnapshot */
       }, function (err) {
-        chat.streamError = '无法打开会话：' + ((err && err.message) || '连接失败');
+        chat.streamError = tr('openChatFailed') + ((err && err.message) || tr('connectionFailed'));
         renderChat(true);
         if (err && err.code && /auth/.test(err.code)) showAuthExpired(err);
       });
@@ -3438,7 +3727,7 @@ textarea.field { resize: none; line-height: 1.55; }
     var chat = state.chat;
     if (!chat) return;
     var title = chat.title || (chat.cwd ? basename(chat.cwd) : '');
-    if (!title) title = chat.sessionId ? '对话' : '新对话';
+    if (!title) title = chat.sessionId ? tr('chat') : tr('newChat');
     if (dom.chatTitle) dom.chatTitle.textContent = title;
     var modelName = modelDisplay(chat.model);
     if (dom.chatSub) dom.chatSub.textContent = modelName || 'DeepSeek Harness';
@@ -3447,7 +3736,7 @@ textarea.field { resize: none; line-height: 1.55; }
     if (dom.btnStop) dom.btnStop.hidden = !chat.running;
     if (dom.runStatus) {
       dom.runStatus.hidden = !chat.running;
-      if (chat.running && dom.runStatusText) dom.runStatusText.textContent = '正在生成…';
+      if (chat.running && dom.runStatusText) dom.runStatusText.textContent = tr('generating');
     }
     updateComposerChips();
     updateSendState();
@@ -3469,8 +3758,8 @@ textarea.field { resize: none; line-height: 1.55; }
     if (!background && state.screen === 'chat') return;
     var reason = ev && ev.data && ev.data.reason ? ev.data.reason : null;
     var kind = reason && reason.kind ? reason.kind : 'completed';
-    var title = kind === 'error' ? 'DSH 任务失败' : (kind === 'cancelled' ? 'DSH 任务已停止' : 'DSH 任务完成');
-    var name = chat.title || (chat.cwd ? basename(chat.cwd) : '对话');
+    var title = kind === 'error' ? tr('taskFailed') : (kind === 'cancelled' ? tr('taskCancelled') : tr('taskComplete'));
+    var name = chat.title || (chat.cwd ? basename(chat.cwd) : tr('chat'));
     var last = '';
     for (var i = chat.items.length - 1; i >= 0; i--) {
       if (chat.items[i].kind === 'assistant' && chat.items[i].text) { last = chat.items[i].text; break; }
@@ -3504,7 +3793,7 @@ textarea.field { resize: none; line-height: 1.55; }
     dom.chipWorkspace.hidden = !isNew;
     dom.chipModel.hidden = !isNew;
     if (isNew) {
-      dom.chipWorkspaceText.textContent = chat.cwd ? basename(chat.cwd) : '选择工作目录';
+      dom.chipWorkspaceText.textContent = chat.cwd ? basename(chat.cwd) : tr('chooseWorkspace');
       dom.chipModelText.textContent = modelDisplay(chat.model);
     }
   }
@@ -3564,7 +3853,7 @@ textarea.field { resize: none; line-height: 1.55; }
       k++;
     }
     if (thinking) {
-      html += '<div class="thinking-row" data-thinking="1"><span class="thinking-dots"><i></i><i></i><i></i></span><span>正在思考…</span></div>';
+      html += ('<div class="thinking-row" data-thinking="1"><span class="thinking-dots"><i></i><i></i><i></i></span><span>' + esc(tr('thinking')) + '</span></div>');
     }
     if (chat.streamError) {
       html += '<div class="msg-notice" data-tone="error">' + icon('refresh') + '<span>' + esc(chat.streamError) + '</span></div>';
@@ -3617,7 +3906,7 @@ textarea.field { resize: none; line-height: 1.55; }
     if (showReasoning) {
       reasoning = '<div class="reasoning">' +
         '<button class="reasoning-toggle" data-reasoning="' + esc(item.id) + '" data-open="' + (open ? '1' : '0') + '">' +
-        icon('chevron') + '<span class="reasoning-label">' + (activeReasoning ? '正在思考…' : '思考过程') + '</span>' +
+        icon('chevron') + '<span class="reasoning-label">' + (activeReasoning ? tr('thinking') : tr('reasoning')) + '</span>' +
         '</button>' +
         '<div class="reasoning-body"' + (open ? '' : ' hidden') + '>' + esc(item.reasoning) + '</div>' +
         '</div>';
@@ -3628,7 +3917,7 @@ textarea.field { resize: none; line-height: 1.55; }
     } else if (item.streaming) {
       body = '<span class="thinking-dots"><i></i><i></i><i></i></span>';
     }
-    var interrupted = item.interrupted ? '<div class="msg-notice" data-tone="warn">' + icon('stop') + '<span>生成已中断</span></div>' : '';
+    var interrupted = item.interrupted ? '<div class="msg-notice" data-tone="warn">' + icon('stop') + ('<span>' + esc(tr('generationInterrupted')) + '</span></div>') : '';
     return '<div class="group-assistant" data-id="' + esc(item.id) + '">' + reasoning + '<div class="assistant-text md">' + body + '</div>' + interrupted + '</div>';
   }
 
@@ -3658,7 +3947,7 @@ textarea.field { resize: none; line-height: 1.55; }
     if (showReasoning) {
       reasoning = '<div class="reasoning">' +
         '<button class="reasoning-toggle" data-reasoning="' + esc(item.id) + '" data-open="' + (open ? '1' : '0') + '">' +
-        icon('chevron') + '<span class="reasoning-label">' + (activeReasoning ? '正在思考…' : '思考过程') + '</span>' +
+        icon('chevron') + '<span class="reasoning-label">' + (activeReasoning ? tr('thinking') : tr('reasoning')) + '</span>' +
         '</button>' +
         '<div class="reasoning-body"' + (open ? '' : ' hidden') + '>' + esc(item.reasoning) + '</div>' +
         '</div>';
@@ -3669,7 +3958,7 @@ textarea.field { resize: none; line-height: 1.55; }
     } else if (item.streaming) {
       body = '<span class="thinking-dots"><i></i><i></i><i></i></span>';
     }
-    var interrupted = item.interrupted ? '<div class="msg-notice" data-tone="warn">' + icon('stop') + '<span>生成已中断</span></div>' : '';
+    var interrupted = item.interrupted ? '<div class="msg-notice" data-tone="warn">' + icon('stop') + ('<span>' + esc(tr('generationInterrupted')) + '</span></div>') : '';
     return '<div class="msg-assistant" data-id="' + esc(item.id) + '">' +
       '<div class="assistant-avatar"><svg class="logo"><use href="#whale"/></svg></div>' +
       '<div class="assistant-body">' + reasoning + '<div class="assistant-text md">' + body + '</div>' + interrupted + '</div>' +
@@ -3700,9 +3989,9 @@ textarea.field { resize: none; line-height: 1.55; }
     var body = '';
     if (open) {
       var sections = '';
-      if (item.argsText) sections += '<div class="tool-section"><div class="tool-section-label">参数</div>' + esc(prettyArgs(item.argsText)) + '</div>';
-      if (item.resultText) sections += '<div class="tool-section' + (item.status === 'error' ? ' tool-error-text' : '') + '"><div class="tool-section-label">结果</div>' + esc(item.resultText) + '</div>';
-      body = sections || '<div class="tool-section-label">暂无详情</div>';
+      if (item.argsText) sections += ('<div class="tool-section"><div class="tool-section-label">' + esc(tr('arguments')) + '</div>') + esc(prettyArgs(item.argsText)) + '</div>';
+      if (item.resultText) sections += '<div class="tool-section' + (item.status === 'error' ? ' tool-error-text' : '') + ('"><div class="tool-section-label">' + esc(tr('result')) + '</div>') + esc(item.resultText) + '</div>';
+      body = sections || ('<div class="tool-section-label">' + esc(tr('noDetails')) + '</div>');
     }
     return '<div class="msg-tool" data-id="' + esc(item.id) + '" data-status="' + esc(status) + '">' +
       '<button class="tool-head" data-tool="' + esc(item.id) + '" data-open="' + (open ? '1' : '0') + '">' +
@@ -3749,7 +4038,7 @@ textarea.field { resize: none; line-height: 1.55; }
         var open = chat.openReasoning[it.id] || active;
         toggle.setAttribute('data-open', open ? '1' : '0');
         var label = toggle.querySelector('.reasoning-label');
-        if (label) label.textContent = active ? '正在思考…' : '思考过程';
+        if (label) label.textContent = active ? tr('thinking') : tr('reasoning');
         if (reasonEl) reasonEl.hidden = !open;
       }
       break;
@@ -3833,7 +4122,7 @@ textarea.field { resize: none; line-height: 1.55; }
     var chat = ensureChat();
     if (!state.client || state.mock) {
       if (state.mock) { mockSend(text); return; }
-      toast('客户端未就绪');
+      toast(tr('clientNotReady'));
       return;
     }
     chat.pendingUser = { text: text };
@@ -3846,7 +4135,7 @@ textarea.field { resize: none; line-height: 1.55; }
         var cwd = chat.cwd || DEFAULT_CWD;
         var created = await state.client.createSession({ cwd: cwd });
         chat.sessionId = (created && created.sessionId) || (created && created.value && created.value.sessionId);
-        if (!chat.sessionId) throw new Error('创建会话失败');
+        if (!chat.sessionId) throw new Error(tr('createChatFailed'));
         storeSet('dsh.lastCwd', cwd);
         if (chat.model) {
           try { await state.client.selectModel(chat.sessionId, chat.model); } catch (e) { /* model selection is best-effort */ }
@@ -3873,7 +4162,7 @@ textarea.field { resize: none; line-height: 1.55; }
       chat.pendingUser = null;
       renderChat(true);
       refreshHeader();
-      var msg = (err && err.message) || '发送失败';
+      var msg = (err && err.message) || tr('sendFailed');
       if (err && err.code && /auth|token|credential/i.test(err.code)) {
         showAuthExpired(err);
       } else {
@@ -3888,8 +4177,8 @@ textarea.field { resize: none; line-height: 1.55; }
     if (!chat || !chat.sessionId) return;
     if (state.client && !state.mock) {
       Promise.resolve(state.client.cancel(chat.sessionId)).then(function () {
-        toast('已请求停止');
-      }, function (err) { toast((err && err.message) || '停止失败'); });
+        toast(tr('stopRequested'));
+      }, function (err) { toast((err && err.message) || tr('stopFailed')); });
     } else if (state.mock) {
       mockStop();
     }
@@ -3917,7 +4206,7 @@ textarea.field { resize: none; line-height: 1.55; }
       renderChat(true);
       el.scrollTop = el.scrollHeight - prevHeight + prevTop;
     } catch (err) {
-      toast((err && err.message) || '加载失败');
+      toast((err && err.message) || tr('loadFailed'));
     } finally {
       chat.loadingOlder = false;
       if (dom.btnOlder) dom.btnOlder.classList.remove('is-loading');
@@ -3951,12 +4240,12 @@ textarea.field { resize: none; line-height: 1.55; }
   function openMenuSheet() {
     var chat = state.chat;
     if (!chat) return;
-    var html = sheetHeader('对话操作') +
+    var html = sheetHeader(tr('chatActions')) +
       '<div class="sheet-list">' +
-      '<button class="sheet-item" data-action="rename"><span class="sheet-item-icon">' + icon('file') + '</span><span class="sheet-item-copy"><span class="sheet-item-title">重命名对话</span></span></button>' +
-      '<button class="sheet-item" data-action="model"><span class="sheet-item-icon">' + icon('chip') + '</span><span class="sheet-item-copy"><span class="sheet-item-title">选择模型</span><span class="sheet-item-sub">' + esc(modelDisplay(chat.model)) + '</span></span></button>' +
-      (chat.cwd ? '<button class="sheet-item" data-action="cwd"><span class="sheet-item-icon">' + icon('folder') + '</span><span class="sheet-item-copy"><span class="sheet-item-title">工作目录</span><span class="sheet-item-sub">' + esc(chat.cwd) + '</span></span></button>' : '') +
-      (chat.running ? '<button class="sheet-item" data-action="stop"><span class="sheet-item-icon">' + icon('stop') + '</span><span class="sheet-item-copy"><span class="sheet-item-title">停止生成</span></span></button>' : '') +
+      '<button class="sheet-item" data-action="rename"><span class="sheet-item-icon">' + icon('file') + ('</span><span class="sheet-item-copy"><span class="sheet-item-title">' + esc(tr('renameChat')) + '</span></span></button>') +
+      '<button class="sheet-item" data-action="model"><span class="sheet-item-icon">' + icon('chip') + ('</span><span class="sheet-item-copy"><span class="sheet-item-title">' + esc(tr('chooseModel')) + '</span><span class="sheet-item-sub">') + esc(modelDisplay(chat.model)) + '</span></span></button>' +
+      (chat.cwd ? '<button class="sheet-item" data-action="cwd"><span class="sheet-item-icon">' + icon('folder') + ('</span><span class="sheet-item-copy"><span class="sheet-item-title">' + esc(tr('workspace')) + '</span><span class="sheet-item-sub">') + esc(chat.cwd) + '</span></span></button>' : '') +
+      (chat.running ? '<button class="sheet-item" data-action="stop"><span class="sheet-item-icon">' + icon('stop') + ('</span><span class="sheet-item-copy"><span class="sheet-item-title">' + esc(tr('stopGeneration')) + '</span></span></button>') : '') +
       '</div>';
     openSheet(html, {
       onMount: function (root) {
@@ -3976,26 +4265,26 @@ textarea.field { resize: none; line-height: 1.55; }
   function openRenameSheet() {
     var chat = state.chat;
     var current = (chat.title || '').replace(/"/g, '&quot;');
-    var html = sheetHeader('重命名对话') +
-      '<input class="field" id="rename-input" maxlength="120" placeholder="给这个对话起个名字" value="' + current + '" />' +
-      '<div class="dialog-actions"><button class="btn btn-ghost" id="rename-cancel">取消</button><button class="btn btn-primary" id="rename-save">保存</button></div>';
+    var html = sheetHeader(tr('renameChat')) +
+      ('<input class="field" id="rename-input" maxlength="120" placeholder="' + esc(tr('chatNamePlaceholder')) + '" value="') + current + '" />' +
+      ('<div class="dialog-actions"><button class="btn btn-ghost" id="rename-cancel">' + esc(tr('cancel')) + '</button><button class="btn btn-primary" id="rename-save">' + esc(tr('save')) + '</button></div>');
     openSheet(html, {
       onMount: function (root) {
         var input = $('#rename-input', root);
         input.focus();
         function save() {
           var title = input.value.trim();
-          if (!title) { toast('标题不能为空'); return; }
+          if (!title) { toast(tr('titleRequired')); return; }
           closeSheet();
           if (state.client && chat.sessionId) {
             Promise.resolve(state.client.renameSession(chat.sessionId, title)).then(function () {
               chat.title = title;
               refreshHeader();
               renderHome();
-              toast('已重命名');
-            }, function (err) { toast((err && err.message) || '重命名失败'); });
+              toast(tr('renamed'));
+            }, function (err) { toast((err && err.message) || tr('renameFailed')); });
           } else {
-            toast('新对话还没有创建，先发送一条消息吧');
+            toast(tr('sendFirst'));
           }
         }
         $('#rename-save', root).addEventListener('click', save);
@@ -4011,12 +4300,12 @@ textarea.field { resize: none; line-height: 1.55; }
       ? recent.map(function (p) {
           return '<button class="sheet-item" data-cwd="' + esc(p) + '"><span class="sheet-item-icon">' + icon('folder') + '</span><span class="sheet-item-copy"><span class="sheet-item-title">' + esc(basename(p)) + '</span><span class="sheet-item-sub">' + esc(p) + '</span></span><span class="sheet-check" hidden>' + icon('check') + '</span></button>';
         }).join('')
-      : '<div class="settings-note">还没有使用过的目录，输入一个绝对路径开始。</div>';
-    var html = sheetHeader('选择工作目录', 'DSH 会在这个目录里读写文件、运行命令。') +
+      : ('<div class="settings-note">' + esc(tr('noRecentWorkspaces')) + '</div>');
+    var html = sheetHeader(tr('chooseWorkspace'), tr('workspaceHint')) +
       '<div class="sheet-list">' + listHtml + '</div>' +
-      '<label class="field-label">目录路径</label>' +
-      '<input class="field" id="ws-input" placeholder="/root/我的项目" value="' + esc(state.chat ? state.chat.cwd : '') + '" />' +
-      '<div class="dialog-actions"><button class="btn btn-ghost" id="ws-cancel">取消</button><button class="btn btn-primary" id="ws-ok">确定</button></div>';
+      ('<label class="field-label">' + esc(tr('workspacePath')) + '</label>') +
+      ('<input class="field" id="ws-input" placeholder="' + esc(tr('workspacePlaceholder')) + '" value="') + esc(state.chat ? state.chat.cwd : '') + '" />' +
+      ('<div class="dialog-actions"><button class="btn btn-ghost" id="ws-cancel">' + esc(tr('cancel')) + '</button><button class="btn btn-primary" id="ws-ok">' + esc(tr('confirm')) + '</button></div>');
     openSheet(html, {
       onMount: function (root) {
         var input = $('#ws-input', root);
@@ -4033,7 +4322,7 @@ textarea.field { resize: none; line-height: 1.55; }
         $('#ws-cancel', root).addEventListener('click', function () { closeSheet(); if (then) then(true); });
         $('#ws-ok', root).addEventListener('click', function () {
           var p = input.value.trim();
-          if (!p || p.charAt(0) !== '/') { toast('请输入以 / 开头的绝对路径'); return; }
+          if (!p || p.charAt(0) !== '/') { toast(tr('absolutePathRequired')); return; }
           if (state.chat) state.chat.cwd = p.replace(/\/+$/, '');
           storeSet('dsh.lastCwd', state.chat ? state.chat.cwd : p);
           closeSheet();
@@ -4045,9 +4334,9 @@ textarea.field { resize: none; line-height: 1.55; }
   }
 
   async function openModelSheet() {
-    if (!state.client || state.mock) { if (state.mock) return mockModelSheet(); toast('模型列表不可用'); return; }
+    if (!state.client || state.mock) { if (state.mock) return mockModelSheet(); toast(tr('modelsUnavailable')); return; }
     var chat = state.chat;
-    openSheet(sheetHeader('选择模型') + '<div class="settings-note">正在加载模型列表…</div>');
+    openSheet(sheetHeader(tr('chooseModel')) + ('<div class="settings-note">' + esc(tr('loadingModels')) + '</div>'));
     try {
       if (!state.catalog || Date.now() - state.catalogAt > 60000) {
         var cat = await state.client.modelCatalog();
@@ -4056,14 +4345,14 @@ textarea.field { resize: none; line-height: 1.55; }
       }
       renderModelSheet();
     } catch (err) {
-      openSheet(sheetHeader('选择模型') + '<div class="settings-note">加载失败：' + esc((err && err.message) || '未知错误') + '</div>');
+      openSheet(sheetHeader(tr('chooseModel')) + ('<div class="settings-note">' + esc(tr('loadFailedPrefix'))) + esc((err && err.message) || tr('unknownError')) + '</div>');
     }
   }
 
   function renderModelSheet(currentModelId) {
     var cat = state.catalog;
     var chat = state.chat;
-    if (!cat || !cat.groups) { openSheet(sheetHeader('选择模型') + '<div class="settings-note">没有可用的模型。</div>'); return; }
+    if (!cat || !cat.groups) { openSheet(sheetHeader(tr('chooseModel')) + ('<div class="settings-note">' + esc(tr('noModels')) + '</div>')); return; }
     var selected = chat.model || cat.default || {};
     var groupsHtml = cat.groups.map(function (g) {
       var models = (g.models || []).map(function (m) {
@@ -4071,13 +4360,13 @@ textarea.field { resize: none; line-height: 1.55; }
         var efforts = m.reasoning && m.reasoning.efforts && m.reasoning.efforts.length;
         return '<button class="sheet-item" data-model="' + esc(m.id) + '" data-provider="' + esc(g.id) + '" data-active="' + (active ? '1' : '0') + '">' +
           '<span class="sheet-item-icon">' + icon('chip') + '</span>' +
-          '<span class="sheet-item-copy"><span class="sheet-item-title">' + esc(m.name || m.id) + '</span><span class="sheet-item-sub">' + esc(g.name || g.id) + (m.description ? ' · ' + esc(oneLine(m.description, 40)) : '') + (efforts ? ' · 支持推理强度' : '') + '</span></span>' +
+          '<span class="sheet-item-copy"><span class="sheet-item-title">' + esc(m.name || m.id) + '</span><span class="sheet-item-sub">' + esc(g.name || g.id) + (m.description ? ' · ' + esc(oneLine(m.description, 40)) : '') + (efforts ? tr('supportsReasoning') : '') + '</span></span>' +
           '<span class="sheet-check"' + (active ? '' : ' hidden') + '>' + icon('check') + '</span>' +
           '</button>';
       }).join('');
       return '<div class="settings-group-title">' + esc(g.name || g.id) + '</div>' + models;
     }).join('');
-    openSheet(sheetHeader('选择模型', '仅影响当前对话。') + '<div class="sheet-list">' + groupsHtml + '</div>', {
+    openSheet(sheetHeader(tr('chooseModel'), tr('currentChatOnly')) + '<div class="sheet-list">' + groupsHtml + '</div>', {
       onMount: function (root) {
         $all('[data-model]', root).forEach(function (el) {
           el.addEventListener('click', function () {
@@ -4115,7 +4404,7 @@ textarea.field { resize: none; line-height: 1.55; }
         '<span class="sheet-item-copy"><span class="sheet-item-title">' + esc(e.name || e.id) + '</span>' + (e.description ? '<span class="sheet-item-sub">' + esc(e.description) + '</span>' : '') + '</span>' +
         '<span class="sheet-check"' + (current === e.id ? '' : ' hidden') + '>' + icon('check') + '</span></button>';
     }).join('');
-    openSheet(sheetHeader('推理强度', model.name || model.id) + '<div class="sheet-list">' + rows + '</div>', {
+    openSheet(sheetHeader(tr('reasoningEffort'), model.name || model.id) + '<div class="sheet-list">' + rows + '</div>', {
       onMount: function (root) {
         $all('[data-effort]', root).forEach(function (el) {
           el.addEventListener('click', function () {
@@ -4135,10 +4424,10 @@ textarea.field { resize: none; line-height: 1.55; }
     updateComposerChips();
     if (state.client && !state.mock && chat.sessionId) {
       Promise.resolve(state.client.selectModel(chat.sessionId, selection)).then(function () {
-        toast('已切换模型');
-      }, function (err) { toast((err && err.message) || '切换模型失败'); });
+        toast(tr('modelChanged'));
+      }, function (err) { toast((err && err.message) || tr('changeModelFailed')); });
     } else {
-      toast('新对话将使用 ' + modelDisplay(selection));
+      toast(tr('newChatModel') + modelDisplay(selection));
     }
   }
 
@@ -4157,17 +4446,17 @@ textarea.field { resize: none; line-height: 1.55; }
   }
 
   function fontLabel(zoom) {
-    var map = { 100: '小', 110: '标准', 120: '大', 130: '特大' };
+    var map = { 100: tr('fontSmall'), 110: tr('fontStandard'), 120: tr('fontLarge'), 130: tr('fontExtraLarge') };
     return map[zoom] || (zoom + '%');
   }
 
   function openFontSheet() {
     var current = currentTextZoom();
     var options = [
-      { value: 100, label: '小', desc: '更紧凑，一屏显示更多内容' },
-      { value: 110, label: '标准', desc: '默认，比旧版本略大' },
-      { value: 120, label: '大', desc: '更易阅读' },
-      { value: 130, label: '特大', desc: '适合远距离 / 视力不便时' }
+      { value: 100, label: tr('fontSmall'), desc: tr('fontSmallHint') },
+      { value: 110, label: tr('fontStandard'), desc: tr('fontStandardHint') },
+      { value: 120, label: tr('fontLarge'), desc: tr('fontLargeHint') },
+      { value: 130, label: tr('fontExtraLarge'), desc: tr('fontExtraLargeHint') }
     ];
     var rows = options.map(function (o) {
       return '<button class="sheet-item" data-zoom="' + o.value + '" data-active="' + (current === o.value ? '1' : '0') + '">' +
@@ -4175,19 +4464,19 @@ textarea.field { resize: none; line-height: 1.55; }
         '<span class="sheet-item-copy"><span class="sheet-item-title">' + esc(o.label) + '</span><span class="sheet-item-sub">' + esc(o.desc) + '</span></span>' +
         '<span class="sheet-check"' + (current === o.value ? '' : ' hidden') + '>' + icon('check') + '</span></button>';
     }).join('');
-    openSheet(sheetHeader('字体大小', '仅影响 DSH App 的界面文字，立即生效。') +
+    openSheet(sheetHeader(tr('fontSize'), tr('fontSizeHint')) +
       '<div class="sheet-list">' + rows + '</div>', {
       onMount: function (root) {
         $all('[data-zoom]', root).forEach(function (el) {
           el.addEventListener('click', function () {
             var value = parseInt(el.getAttribute('data-zoom'), 10);
             var ok = nativeCall('setTextZoom', String(value));
-            if (ok === null || ok === false) { toast('当前环境不支持调整字体'); return; }
+            if (ok === null || ok === false) { toast(tr('fontUnsupported')); return; }
             closeSheet();
             var label = fontLabel(value);
             var v = $('#set-font-value');
             if (v) v.textContent = label;
-            toast('字体大小：' + label);
+            toast(tr('fontSizePrefix') + label);
           });
         });
       }
@@ -4196,39 +4485,39 @@ textarea.field { resize: none; line-height: 1.55; }
 
   function renderSettings() {
     if (!dom.settingsBody) return;
-    var connMap = { connecting: '连接中', connected: '已连接', reconnecting: '重连中', offline: '未连接' };
+    var connMap = { connecting: tr('connecting'), connected: tr('connected'), reconnecting: tr('reconnecting'), offline: tr('offline') };
     var base = location.origin;
     var appVersion = nativeCall('appVersion') || '0.1.0';
     var html =
-      '<div class="settings-group"><div class="settings-group-title">连接</div><div class="settings-card">' +
-      '<div class="settings-row"><span class="settings-row-label">服务器</span><span class="settings-row-value">' + esc(base) + '</span></div>' +
-      '<div class="settings-row"><span class="settings-row-label">状态</span><span class="settings-row-value">' + esc(connMap[state.connection] || state.connection) + '</span></div>' +
-      '<button class="settings-row" id="set-reconnect"><span class="settings-row-label" style="color:var(--accent)">重新连接</span><span class="settings-row-value">›</span></button>' +
-      '</div><div class="settings-note">令牌由系统安全存储，不会显示在这里。连接失败时请回到电脑上查看 <span class="settings-row-value" style="display:inline">dsh web</span> 打印的新链接。</div></div>' +
-      '<div class="settings-group"><div class="settings-group-title">显示</div><div class="settings-card">' +
-      '<button class="settings-row" id="set-font"><span class="settings-row-label">字体大小</span><span class="settings-row-value" id="set-font-value">' + esc(fontLabel(currentTextZoom())) + '</span></button>' +
-      '</div><div class="settings-note">字体大小保存在本机，调整后立即生效。</div></div>' +
-      '<div class="settings-group"><div class="settings-group-title">会话</div><div class="settings-card">' +
-      '<button class="settings-row" id="set-refresh"><span class="settings-row-label">立即刷新会话列表</span><span class="settings-row-value">' + state.sessions.length + ' 个</span></button>' +
-      '<button class="settings-row settings-row-danger" id="set-reset"><span class="settings-row-label">更换服务器 / 重新登录</span><span class="settings-row-value">›</span></button>' +
-      '</div><div class="settings-note">重新登录会清除本机保存的地址与令牌，需要重新粘贴 dsh web 的链接。</div></div>' +
-      '<div class="settings-group"><div class="settings-group-title">关于</div><div class="settings-card">' +
+      ('<div class="settings-group"><div class="settings-group-title">' + esc(tr('connection')) + '</div><div class="settings-card">') +
+      ('<div class="settings-row"><span class="settings-row-label">' + esc(tr('server')) + '</span><span class="settings-row-value">') + esc(base) + '</span></div>' +
+      ('<div class="settings-row"><span class="settings-row-label">' + esc(tr('status')) + '</span><span class="settings-row-value">') + esc(connMap[state.connection] || state.connection) + '</span></div>' +
+      ('<button class="settings-row" id="set-reconnect"><span class="settings-row-label" style="color:var(--accent)">' + esc(tr('reconnect')) + '</span><span class="settings-row-value">›</span></button>') +
+      ('</div><div class="settings-note">' + esc(tr('tokenNotice')) + '</div></div>') +
+      ('<div class="settings-group"><div class="settings-group-title">' + esc(tr('display')) + '</div><div class="settings-card">') +
+      ('<button class="settings-row" id="set-font"><span class="settings-row-label">' + esc(tr('fontSize')) + '</span><span class="settings-row-value" id="set-font-value">') + esc(fontLabel(currentTextZoom())) + '</span></button>' +
+      ('</div><div class="settings-note">' + esc(tr('fontSavedLocally')) + '</div></div>') +
+      ('<div class="settings-group"><div class="settings-group-title">' + esc(tr('sessions')) + '</div><div class="settings-card">') +
+      ('<button class="settings-row" id="set-refresh"><span class="settings-row-label">' + esc(tr('refreshSessions')) + '</span><span class="settings-row-value">') + state.sessions.length + (esc(tr('sessionCountSuffix')) + '</span></button>') +
+      ('<button class="settings-row settings-row-danger" id="set-reset"><span class="settings-row-label">' + esc(tr('changeServer')) + '</span><span class="settings-row-value">›</span></button>') +
+      ('</div><div class="settings-note">' + esc(tr('loginAgainHint')) + '</div></div>') +
+      ('<div class="settings-group"><div class="settings-group-title">' + esc(tr('about')) + '</div><div class="settings-card">') +
       '<div class="settings-row"><span class="settings-row-label">DSH Mobile</span><span class="settings-row-value">' + esc(appVersion) + '</span></div>' +
       '<div class="settings-row"><span class="settings-row-label">DeepSeek Harness</span><span class="settings-row-value">0.2.1-rc.2</span></div>' +
-      '</div><div class="settings-about">为 DeepSeek Harness 打造的轻量 Android 客户端<br>会话、流式回复与工具调用状态</div></div>';
+      ('</div><div class="settings-about">' + esc(tr('aboutClient')) + '<br>' + esc(tr('aboutFeatures')) + '</div></div>');
     dom.settingsBody.innerHTML = html;
     var reconnect = $('#set-reconnect');
     if (reconnect) reconnect.addEventListener('click', function () {
-      if (state.client) { try { state.client.connect(); } catch (e) {} toast('正在重新连接…'); }
+      if (state.client) { try { state.client.connect(); } catch (e) {} toast(tr('reconnectingToast')); }
     });
     var font = $('#set-font');
     if (font) font.addEventListener('click', openFontSheet);
     var refresh = $('#set-refresh');
-    if (refresh) refresh.addEventListener('click', function () { loadSessions(); toast('正在刷新…'); });
+    if (refresh) refresh.addEventListener('click', function () { loadSessions(); toast(tr('refreshing')); });
     var reset = $('#set-reset');
     if (reset) reset.addEventListener('click', function () {
       var ok = nativeCall('reset');
-      if (ok === null) toast('请在 App 中操作');
+      if (ok === null) toast(tr('useApp'));
     });
   }
 
@@ -4274,13 +4563,13 @@ textarea.field { resize: none; line-height: 1.55; }
   }
 
   function showAuthExpired(err) {
-    openSheet(sheetHeader('连接已失效', '令牌可能已经过期，或服务器地址已变更。请重新粘贴 dsh web 打印的链接。') +
-      '<div class="dialog-actions"><button class="btn btn-ghost" id="auth-retry">重试</button><button class="btn btn-primary" id="auth-reset">重新登录</button></div>', {
+    openSheet(sheetHeader(tr('authExpired'), tr('authExpiredHint')) +
+      ('<div class="dialog-actions"><button class="btn btn-ghost" id="auth-retry">' + esc(tr('retry')) + '</button><button class="btn btn-primary" id="auth-reset">' + esc(tr('loginAgain')) + '</button></div>'), {
       onMount: function (root) {
         $('#auth-retry', root).addEventListener('click', function () { closeSheet(); if (state.client) { try { state.client.connect(); } catch (e) {} } });
         $('#auth-reset', root).addEventListener('click', function () {
           closeSheet();
-          if (nativeCall('reset') === null) toast('请在 App 中重新登录');
+          if (nativeCall('reset') === null) toast(tr('loginAgainInApp'));
         });
       }
     });
