@@ -3,6 +3,8 @@
 (function () {
   'use strict';
 
+  var tr = window.DSHI18n.t;
+
   /* ---------------------------------------------------------------- utils */
 
   function $(sel, root) { return (root || document).querySelector(sel); }
@@ -17,15 +19,7 @@
     return parts.length ? parts[parts.length - 1] : path;
   }
   function relativeTime(ts) {
-    if (!ts) return '';
-    var d = Date.now() - ts;
-    if (d < 0) d = 0;
-    if (d < 60e3) return '刚刚';
-    if (d < 3600e3) return Math.floor(d / 60e3) + ' 分钟前';
-    if (d < 86400e3) return Math.floor(d / 3600e3) + ' 小时前';
-    if (d < 7 * 86400e3) return Math.floor(d / 86400e3) + ' 天前';
-    var date = new Date(ts);
-    return (date.getMonth() + 1) + '月' + date.getDate() + '日';
+    return window.DSHI18n.relativeTime(ts);
   }
   function prettyArgs(text) {
     if (!text) return '';
@@ -139,6 +133,7 @@
   /* ---------------------------------------------------------------- boot */
 
   function boot() {
+    window.DSHI18n.localize(document);
     refs();
     setupWide();
     bindGlobalEvents();
@@ -247,10 +242,10 @@
       if (!silent) setRefreshBusy(false);
     }, function (err) {
       state.listLoading = false;
-      state.listError = err || new Error('加载失败');
+      state.listError = err || new Error(tr('loadFailed'));
       renderHome();
       setRefreshBusy(false);
-      if (!silent) toast((err && err.message) || '无法加载会话');
+      if (!silent) toast((err && err.message) || tr('loadSessionsFailed'));
       if (!(err && err.code && /auth|credential/i.test(err.code))) scheduleFallback();
     });
   }
@@ -282,14 +277,14 @@
     state.connection = s;
     if (dom.connBadge) {
       dom.connBadge.setAttribute('data-state', s);
-      var map = { connecting: '连接中', connected: '已连接', reconnecting: '重连中', offline: '未连接' };
+      var map = { connecting: tr('connecting'), connected: tr('connected'), reconnecting: tr('reconnecting'), offline: tr('offline') };
       if (dom.connText) dom.connText.textContent = map[s] || s;
     }
     if (dom.chatStatusDot) {
       dom.chatStatusDot.setAttribute('data-state', s === 'connected' ? 'idle' : (s === 'offline' ? 'error' : 'running'));
     }
     if (s === 'offline' && state.screen === 'chat' && state.chat && !state.chat.streamError) {
-      state.chat.streamError = '连接已断开，正在尝试重连…';
+      state.chat.streamError = tr('connectionLost');
       renderChat();
     }
   }
@@ -387,19 +382,19 @@
     dom.emptyHome.hidden = hasAny || !!state.listError || !state.sessionsLoaded;
 
     if (state.listError) {
-      dom.list.innerHTML = '<button class="session-item" id="btn-retry-list"><span class="session-avatar">' + icon('refresh') + '</span><span class="session-body"><span class="session-title">加载失败，点击重试</span><span class="session-meta">' + esc(state.listError.message || '网络错误') + '</span></span></button>';
+      dom.list.innerHTML = '<button class="session-item" id="btn-retry-list"><span class="session-avatar">' + icon('refresh') + ('</span><span class="session-body"><span class="session-title">' + esc(tr('retryLoading')) + '</span><span class="session-meta">') + esc(state.listError.message || tr('networkError')) + '</span></span></button>';
       dom.listHead.hidden = true;
       dom.emptyHome.hidden = true;
     }
     if (dom.brandSub) {
-      dom.brandSub.textContent = state.connection === 'connected' ? (location.host || '已连接') : '远程 Agent 客户端';
+      dom.brandSub.textContent = state.connection === 'connected' ? (location.host || tr('connected')) : tr('remoteClient');
     }
   }
 
   function sessionRowHtml(s) {
-    var title = s.title || (s.cwd ? basename(s.cwd) : '未命名对话');
+    var title = s.title || (s.cwd ? basename(s.cwd) : tr('untitledChat'));
     var parts = [];
-    if (s.running) parts.push('<span class="session-running"><span class="pulse-dot"></span>运行中</span>');
+    if (s.running) parts.push(('<span class="session-running"><span class="pulse-dot"></span>' + esc(tr('running')) + '</span>'));
     if (s.cwd) parts.push('<span class="meta-path">' + esc(basename(s.cwd)) + '</span>');
     parts.push('<span>' + esc(relativeTime(s.updatedAt)) + '</span>');
     var meta = [];
@@ -490,7 +485,7 @@
       Promise.resolve(state.client.follow(sessionId)).then(function () {
         /* snapshot arrives through onSnapshot */
       }, function (err) {
-        chat.streamError = '无法打开会话：' + ((err && err.message) || '连接失败');
+        chat.streamError = tr('openChatFailed') + ((err && err.message) || tr('connectionFailed'));
         renderChat(true);
         if (err && err.code && /auth/.test(err.code)) showAuthExpired(err);
       });
@@ -526,7 +521,7 @@
     var chat = state.chat;
     if (!chat) return;
     var title = chat.title || (chat.cwd ? basename(chat.cwd) : '');
-    if (!title) title = chat.sessionId ? '对话' : '新对话';
+    if (!title) title = chat.sessionId ? tr('chat') : tr('newChat');
     if (dom.chatTitle) dom.chatTitle.textContent = title;
     var modelName = modelDisplay(chat.model);
     if (dom.chatSub) dom.chatSub.textContent = modelName || 'DeepSeek Harness';
@@ -535,7 +530,7 @@
     if (dom.btnStop) dom.btnStop.hidden = !chat.running;
     if (dom.runStatus) {
       dom.runStatus.hidden = !chat.running;
-      if (chat.running && dom.runStatusText) dom.runStatusText.textContent = '正在生成…';
+      if (chat.running && dom.runStatusText) dom.runStatusText.textContent = tr('generating');
     }
     updateComposerChips();
     updateSendState();
@@ -557,8 +552,8 @@
     if (!background && state.screen === 'chat') return;
     var reason = ev && ev.data && ev.data.reason ? ev.data.reason : null;
     var kind = reason && reason.kind ? reason.kind : 'completed';
-    var title = kind === 'error' ? 'DSH 任务失败' : (kind === 'cancelled' ? 'DSH 任务已停止' : 'DSH 任务完成');
-    var name = chat.title || (chat.cwd ? basename(chat.cwd) : '对话');
+    var title = kind === 'error' ? tr('taskFailed') : (kind === 'cancelled' ? tr('taskCancelled') : tr('taskComplete'));
+    var name = chat.title || (chat.cwd ? basename(chat.cwd) : tr('chat'));
     var last = '';
     for (var i = chat.items.length - 1; i >= 0; i--) {
       if (chat.items[i].kind === 'assistant' && chat.items[i].text) { last = chat.items[i].text; break; }
@@ -592,7 +587,7 @@
     dom.chipWorkspace.hidden = !isNew;
     dom.chipModel.hidden = !isNew;
     if (isNew) {
-      dom.chipWorkspaceText.textContent = chat.cwd ? basename(chat.cwd) : '选择工作目录';
+      dom.chipWorkspaceText.textContent = chat.cwd ? basename(chat.cwd) : tr('chooseWorkspace');
       dom.chipModelText.textContent = modelDisplay(chat.model);
     }
   }
@@ -652,7 +647,7 @@
       k++;
     }
     if (thinking) {
-      html += '<div class="thinking-row" data-thinking="1"><span class="thinking-dots"><i></i><i></i><i></i></span><span>正在思考…</span></div>';
+      html += ('<div class="thinking-row" data-thinking="1"><span class="thinking-dots"><i></i><i></i><i></i></span><span>' + esc(tr('thinking')) + '</span></div>');
     }
     if (chat.streamError) {
       html += '<div class="msg-notice" data-tone="error">' + icon('refresh') + '<span>' + esc(chat.streamError) + '</span></div>';
@@ -705,7 +700,7 @@
     if (showReasoning) {
       reasoning = '<div class="reasoning">' +
         '<button class="reasoning-toggle" data-reasoning="' + esc(item.id) + '" data-open="' + (open ? '1' : '0') + '">' +
-        icon('chevron') + '<span class="reasoning-label">' + (activeReasoning ? '正在思考…' : '思考过程') + '</span>' +
+        icon('chevron') + '<span class="reasoning-label">' + (activeReasoning ? tr('thinking') : tr('reasoning')) + '</span>' +
         '</button>' +
         '<div class="reasoning-body"' + (open ? '' : ' hidden') + '>' + esc(item.reasoning) + '</div>' +
         '</div>';
@@ -716,7 +711,7 @@
     } else if (item.streaming) {
       body = '<span class="thinking-dots"><i></i><i></i><i></i></span>';
     }
-    var interrupted = item.interrupted ? '<div class="msg-notice" data-tone="warn">' + icon('stop') + '<span>生成已中断</span></div>' : '';
+    var interrupted = item.interrupted ? '<div class="msg-notice" data-tone="warn">' + icon('stop') + ('<span>' + esc(tr('generationInterrupted')) + '</span></div>') : '';
     return '<div class="group-assistant" data-id="' + esc(item.id) + '">' + reasoning + '<div class="assistant-text md">' + body + '</div>' + interrupted + '</div>';
   }
 
@@ -746,7 +741,7 @@
     if (showReasoning) {
       reasoning = '<div class="reasoning">' +
         '<button class="reasoning-toggle" data-reasoning="' + esc(item.id) + '" data-open="' + (open ? '1' : '0') + '">' +
-        icon('chevron') + '<span class="reasoning-label">' + (activeReasoning ? '正在思考…' : '思考过程') + '</span>' +
+        icon('chevron') + '<span class="reasoning-label">' + (activeReasoning ? tr('thinking') : tr('reasoning')) + '</span>' +
         '</button>' +
         '<div class="reasoning-body"' + (open ? '' : ' hidden') + '>' + esc(item.reasoning) + '</div>' +
         '</div>';
@@ -757,7 +752,7 @@
     } else if (item.streaming) {
       body = '<span class="thinking-dots"><i></i><i></i><i></i></span>';
     }
-    var interrupted = item.interrupted ? '<div class="msg-notice" data-tone="warn">' + icon('stop') + '<span>生成已中断</span></div>' : '';
+    var interrupted = item.interrupted ? '<div class="msg-notice" data-tone="warn">' + icon('stop') + ('<span>' + esc(tr('generationInterrupted')) + '</span></div>') : '';
     return '<div class="msg-assistant" data-id="' + esc(item.id) + '">' +
       '<div class="assistant-avatar"><svg class="logo"><use href="#whale"/></svg></div>' +
       '<div class="assistant-body">' + reasoning + '<div class="assistant-text md">' + body + '</div>' + interrupted + '</div>' +
@@ -788,9 +783,9 @@
     var body = '';
     if (open) {
       var sections = '';
-      if (item.argsText) sections += '<div class="tool-section"><div class="tool-section-label">参数</div>' + esc(prettyArgs(item.argsText)) + '</div>';
-      if (item.resultText) sections += '<div class="tool-section' + (item.status === 'error' ? ' tool-error-text' : '') + '"><div class="tool-section-label">结果</div>' + esc(item.resultText) + '</div>';
-      body = sections || '<div class="tool-section-label">暂无详情</div>';
+      if (item.argsText) sections += ('<div class="tool-section"><div class="tool-section-label">' + esc(tr('arguments')) + '</div>') + esc(prettyArgs(item.argsText)) + '</div>';
+      if (item.resultText) sections += '<div class="tool-section' + (item.status === 'error' ? ' tool-error-text' : '') + ('"><div class="tool-section-label">' + esc(tr('result')) + '</div>') + esc(item.resultText) + '</div>';
+      body = sections || ('<div class="tool-section-label">' + esc(tr('noDetails')) + '</div>');
     }
     return '<div class="msg-tool" data-id="' + esc(item.id) + '" data-status="' + esc(status) + '">' +
       '<button class="tool-head" data-tool="' + esc(item.id) + '" data-open="' + (open ? '1' : '0') + '">' +
@@ -837,7 +832,7 @@
         var open = chat.openReasoning[it.id] || active;
         toggle.setAttribute('data-open', open ? '1' : '0');
         var label = toggle.querySelector('.reasoning-label');
-        if (label) label.textContent = active ? '正在思考…' : '思考过程';
+        if (label) label.textContent = active ? tr('thinking') : tr('reasoning');
         if (reasonEl) reasonEl.hidden = !open;
       }
       break;
@@ -921,7 +916,7 @@
     var chat = ensureChat();
     if (!state.client || state.mock) {
       if (state.mock) { mockSend(text); return; }
-      toast('客户端未就绪');
+      toast(tr('clientNotReady'));
       return;
     }
     chat.pendingUser = { text: text };
@@ -934,7 +929,7 @@
         var cwd = chat.cwd || DEFAULT_CWD;
         var created = await state.client.createSession({ cwd: cwd });
         chat.sessionId = (created && created.sessionId) || (created && created.value && created.value.sessionId);
-        if (!chat.sessionId) throw new Error('创建会话失败');
+        if (!chat.sessionId) throw new Error(tr('createChatFailed'));
         storeSet('dsh.lastCwd', cwd);
         if (chat.model) {
           try { await state.client.selectModel(chat.sessionId, chat.model); } catch (e) { /* model selection is best-effort */ }
@@ -961,7 +956,7 @@
       chat.pendingUser = null;
       renderChat(true);
       refreshHeader();
-      var msg = (err && err.message) || '发送失败';
+      var msg = (err && err.message) || tr('sendFailed');
       if (err && err.code && /auth|token|credential/i.test(err.code)) {
         showAuthExpired(err);
       } else {
@@ -976,8 +971,8 @@
     if (!chat || !chat.sessionId) return;
     if (state.client && !state.mock) {
       Promise.resolve(state.client.cancel(chat.sessionId)).then(function () {
-        toast('已请求停止');
-      }, function (err) { toast((err && err.message) || '停止失败'); });
+        toast(tr('stopRequested'));
+      }, function (err) { toast((err && err.message) || tr('stopFailed')); });
     } else if (state.mock) {
       mockStop();
     }
@@ -1005,7 +1000,7 @@
       renderChat(true);
       el.scrollTop = el.scrollHeight - prevHeight + prevTop;
     } catch (err) {
-      toast((err && err.message) || '加载失败');
+      toast((err && err.message) || tr('loadFailed'));
     } finally {
       chat.loadingOlder = false;
       if (dom.btnOlder) dom.btnOlder.classList.remove('is-loading');
@@ -1039,12 +1034,12 @@
   function openMenuSheet() {
     var chat = state.chat;
     if (!chat) return;
-    var html = sheetHeader('对话操作') +
+    var html = sheetHeader(tr('chatActions')) +
       '<div class="sheet-list">' +
-      '<button class="sheet-item" data-action="rename"><span class="sheet-item-icon">' + icon('file') + '</span><span class="sheet-item-copy"><span class="sheet-item-title">重命名对话</span></span></button>' +
-      '<button class="sheet-item" data-action="model"><span class="sheet-item-icon">' + icon('chip') + '</span><span class="sheet-item-copy"><span class="sheet-item-title">选择模型</span><span class="sheet-item-sub">' + esc(modelDisplay(chat.model)) + '</span></span></button>' +
-      (chat.cwd ? '<button class="sheet-item" data-action="cwd"><span class="sheet-item-icon">' + icon('folder') + '</span><span class="sheet-item-copy"><span class="sheet-item-title">工作目录</span><span class="sheet-item-sub">' + esc(chat.cwd) + '</span></span></button>' : '') +
-      (chat.running ? '<button class="sheet-item" data-action="stop"><span class="sheet-item-icon">' + icon('stop') + '</span><span class="sheet-item-copy"><span class="sheet-item-title">停止生成</span></span></button>' : '') +
+      '<button class="sheet-item" data-action="rename"><span class="sheet-item-icon">' + icon('file') + ('</span><span class="sheet-item-copy"><span class="sheet-item-title">' + esc(tr('renameChat')) + '</span></span></button>') +
+      '<button class="sheet-item" data-action="model"><span class="sheet-item-icon">' + icon('chip') + ('</span><span class="sheet-item-copy"><span class="sheet-item-title">' + esc(tr('chooseModel')) + '</span><span class="sheet-item-sub">') + esc(modelDisplay(chat.model)) + '</span></span></button>' +
+      (chat.cwd ? '<button class="sheet-item" data-action="cwd"><span class="sheet-item-icon">' + icon('folder') + ('</span><span class="sheet-item-copy"><span class="sheet-item-title">' + esc(tr('workspace')) + '</span><span class="sheet-item-sub">') + esc(chat.cwd) + '</span></span></button>' : '') +
+      (chat.running ? '<button class="sheet-item" data-action="stop"><span class="sheet-item-icon">' + icon('stop') + ('</span><span class="sheet-item-copy"><span class="sheet-item-title">' + esc(tr('stopGeneration')) + '</span></span></button>') : '') +
       '</div>';
     openSheet(html, {
       onMount: function (root) {
@@ -1064,26 +1059,26 @@
   function openRenameSheet() {
     var chat = state.chat;
     var current = (chat.title || '').replace(/"/g, '&quot;');
-    var html = sheetHeader('重命名对话') +
-      '<input class="field" id="rename-input" maxlength="120" placeholder="给这个对话起个名字" value="' + current + '" />' +
-      '<div class="dialog-actions"><button class="btn btn-ghost" id="rename-cancel">取消</button><button class="btn btn-primary" id="rename-save">保存</button></div>';
+    var html = sheetHeader(tr('renameChat')) +
+      ('<input class="field" id="rename-input" maxlength="120" placeholder="' + esc(tr('chatNamePlaceholder')) + '" value="') + current + '" />' +
+      ('<div class="dialog-actions"><button class="btn btn-ghost" id="rename-cancel">' + esc(tr('cancel')) + '</button><button class="btn btn-primary" id="rename-save">' + esc(tr('save')) + '</button></div>');
     openSheet(html, {
       onMount: function (root) {
         var input = $('#rename-input', root);
         input.focus();
         function save() {
           var title = input.value.trim();
-          if (!title) { toast('标题不能为空'); return; }
+          if (!title) { toast(tr('titleRequired')); return; }
           closeSheet();
           if (state.client && chat.sessionId) {
             Promise.resolve(state.client.renameSession(chat.sessionId, title)).then(function () {
               chat.title = title;
               refreshHeader();
               renderHome();
-              toast('已重命名');
-            }, function (err) { toast((err && err.message) || '重命名失败'); });
+              toast(tr('renamed'));
+            }, function (err) { toast((err && err.message) || tr('renameFailed')); });
           } else {
-            toast('新对话还没有创建，先发送一条消息吧');
+            toast(tr('sendFirst'));
           }
         }
         $('#rename-save', root).addEventListener('click', save);
@@ -1099,12 +1094,12 @@
       ? recent.map(function (p) {
           return '<button class="sheet-item" data-cwd="' + esc(p) + '"><span class="sheet-item-icon">' + icon('folder') + '</span><span class="sheet-item-copy"><span class="sheet-item-title">' + esc(basename(p)) + '</span><span class="sheet-item-sub">' + esc(p) + '</span></span><span class="sheet-check" hidden>' + icon('check') + '</span></button>';
         }).join('')
-      : '<div class="settings-note">还没有使用过的目录，输入一个绝对路径开始。</div>';
-    var html = sheetHeader('选择工作目录', 'DSH 会在这个目录里读写文件、运行命令。') +
+      : ('<div class="settings-note">' + esc(tr('noRecentWorkspaces')) + '</div>');
+    var html = sheetHeader(tr('chooseWorkspace'), tr('workspaceHint')) +
       '<div class="sheet-list">' + listHtml + '</div>' +
-      '<label class="field-label">目录路径</label>' +
-      '<input class="field" id="ws-input" placeholder="/root/我的项目" value="' + esc(state.chat ? state.chat.cwd : '') + '" />' +
-      '<div class="dialog-actions"><button class="btn btn-ghost" id="ws-cancel">取消</button><button class="btn btn-primary" id="ws-ok">确定</button></div>';
+      ('<label class="field-label">' + esc(tr('workspacePath')) + '</label>') +
+      ('<input class="field" id="ws-input" placeholder="' + esc(tr('workspacePlaceholder')) + '" value="') + esc(state.chat ? state.chat.cwd : '') + '" />' +
+      ('<div class="dialog-actions"><button class="btn btn-ghost" id="ws-cancel">' + esc(tr('cancel')) + '</button><button class="btn btn-primary" id="ws-ok">' + esc(tr('confirm')) + '</button></div>');
     openSheet(html, {
       onMount: function (root) {
         var input = $('#ws-input', root);
@@ -1121,7 +1116,7 @@
         $('#ws-cancel', root).addEventListener('click', function () { closeSheet(); if (then) then(true); });
         $('#ws-ok', root).addEventListener('click', function () {
           var p = input.value.trim();
-          if (!p || p.charAt(0) !== '/') { toast('请输入以 / 开头的绝对路径'); return; }
+          if (!p || p.charAt(0) !== '/') { toast(tr('absolutePathRequired')); return; }
           if (state.chat) state.chat.cwd = p.replace(/\/+$/, '');
           storeSet('dsh.lastCwd', state.chat ? state.chat.cwd : p);
           closeSheet();
@@ -1133,9 +1128,9 @@
   }
 
   async function openModelSheet() {
-    if (!state.client || state.mock) { if (state.mock) return mockModelSheet(); toast('模型列表不可用'); return; }
+    if (!state.client || state.mock) { if (state.mock) return mockModelSheet(); toast(tr('modelsUnavailable')); return; }
     var chat = state.chat;
-    openSheet(sheetHeader('选择模型') + '<div class="settings-note">正在加载模型列表…</div>');
+    openSheet(sheetHeader(tr('chooseModel')) + ('<div class="settings-note">' + esc(tr('loadingModels')) + '</div>'));
     try {
       if (!state.catalog || Date.now() - state.catalogAt > 60000) {
         var cat = await state.client.modelCatalog();
@@ -1144,14 +1139,14 @@
       }
       renderModelSheet();
     } catch (err) {
-      openSheet(sheetHeader('选择模型') + '<div class="settings-note">加载失败：' + esc((err && err.message) || '未知错误') + '</div>');
+      openSheet(sheetHeader(tr('chooseModel')) + ('<div class="settings-note">' + esc(tr('loadFailedPrefix'))) + esc((err && err.message) || tr('unknownError')) + '</div>');
     }
   }
 
   function renderModelSheet(currentModelId) {
     var cat = state.catalog;
     var chat = state.chat;
-    if (!cat || !cat.groups) { openSheet(sheetHeader('选择模型') + '<div class="settings-note">没有可用的模型。</div>'); return; }
+    if (!cat || !cat.groups) { openSheet(sheetHeader(tr('chooseModel')) + ('<div class="settings-note">' + esc(tr('noModels')) + '</div>')); return; }
     var selected = chat.model || cat.default || {};
     var groupsHtml = cat.groups.map(function (g) {
       var models = (g.models || []).map(function (m) {
@@ -1159,13 +1154,13 @@
         var efforts = m.reasoning && m.reasoning.efforts && m.reasoning.efforts.length;
         return '<button class="sheet-item" data-model="' + esc(m.id) + '" data-provider="' + esc(g.id) + '" data-active="' + (active ? '1' : '0') + '">' +
           '<span class="sheet-item-icon">' + icon('chip') + '</span>' +
-          '<span class="sheet-item-copy"><span class="sheet-item-title">' + esc(m.name || m.id) + '</span><span class="sheet-item-sub">' + esc(g.name || g.id) + (m.description ? ' · ' + esc(oneLine(m.description, 40)) : '') + (efforts ? ' · 支持推理强度' : '') + '</span></span>' +
+          '<span class="sheet-item-copy"><span class="sheet-item-title">' + esc(m.name || m.id) + '</span><span class="sheet-item-sub">' + esc(g.name || g.id) + (m.description ? ' · ' + esc(oneLine(m.description, 40)) : '') + (efforts ? tr('supportsReasoning') : '') + '</span></span>' +
           '<span class="sheet-check"' + (active ? '' : ' hidden') + '>' + icon('check') + '</span>' +
           '</button>';
       }).join('');
       return '<div class="settings-group-title">' + esc(g.name || g.id) + '</div>' + models;
     }).join('');
-    openSheet(sheetHeader('选择模型', '仅影响当前对话。') + '<div class="sheet-list">' + groupsHtml + '</div>', {
+    openSheet(sheetHeader(tr('chooseModel'), tr('currentChatOnly')) + '<div class="sheet-list">' + groupsHtml + '</div>', {
       onMount: function (root) {
         $all('[data-model]', root).forEach(function (el) {
           el.addEventListener('click', function () {
@@ -1203,7 +1198,7 @@
         '<span class="sheet-item-copy"><span class="sheet-item-title">' + esc(e.name || e.id) + '</span>' + (e.description ? '<span class="sheet-item-sub">' + esc(e.description) + '</span>' : '') + '</span>' +
         '<span class="sheet-check"' + (current === e.id ? '' : ' hidden') + '>' + icon('check') + '</span></button>';
     }).join('');
-    openSheet(sheetHeader('推理强度', model.name || model.id) + '<div class="sheet-list">' + rows + '</div>', {
+    openSheet(sheetHeader(tr('reasoningEffort'), model.name || model.id) + '<div class="sheet-list">' + rows + '</div>', {
       onMount: function (root) {
         $all('[data-effort]', root).forEach(function (el) {
           el.addEventListener('click', function () {
@@ -1223,10 +1218,10 @@
     updateComposerChips();
     if (state.client && !state.mock && chat.sessionId) {
       Promise.resolve(state.client.selectModel(chat.sessionId, selection)).then(function () {
-        toast('已切换模型');
-      }, function (err) { toast((err && err.message) || '切换模型失败'); });
+        toast(tr('modelChanged'));
+      }, function (err) { toast((err && err.message) || tr('changeModelFailed')); });
     } else {
-      toast('新对话将使用 ' + modelDisplay(selection));
+      toast(tr('newChatModel') + modelDisplay(selection));
     }
   }
 
@@ -1245,17 +1240,17 @@
   }
 
   function fontLabel(zoom) {
-    var map = { 100: '小', 110: '标准', 120: '大', 130: '特大' };
+    var map = { 100: tr('fontSmall'), 110: tr('fontStandard'), 120: tr('fontLarge'), 130: tr('fontExtraLarge') };
     return map[zoom] || (zoom + '%');
   }
 
   function openFontSheet() {
     var current = currentTextZoom();
     var options = [
-      { value: 100, label: '小', desc: '更紧凑，一屏显示更多内容' },
-      { value: 110, label: '标准', desc: '默认，比旧版本略大' },
-      { value: 120, label: '大', desc: '更易阅读' },
-      { value: 130, label: '特大', desc: '适合远距离 / 视力不便时' }
+      { value: 100, label: tr('fontSmall'), desc: tr('fontSmallHint') },
+      { value: 110, label: tr('fontStandard'), desc: tr('fontStandardHint') },
+      { value: 120, label: tr('fontLarge'), desc: tr('fontLargeHint') },
+      { value: 130, label: tr('fontExtraLarge'), desc: tr('fontExtraLargeHint') }
     ];
     var rows = options.map(function (o) {
       return '<button class="sheet-item" data-zoom="' + o.value + '" data-active="' + (current === o.value ? '1' : '0') + '">' +
@@ -1263,19 +1258,19 @@
         '<span class="sheet-item-copy"><span class="sheet-item-title">' + esc(o.label) + '</span><span class="sheet-item-sub">' + esc(o.desc) + '</span></span>' +
         '<span class="sheet-check"' + (current === o.value ? '' : ' hidden') + '>' + icon('check') + '</span></button>';
     }).join('');
-    openSheet(sheetHeader('字体大小', '仅影响 DSH App 的界面文字，立即生效。') +
+    openSheet(sheetHeader(tr('fontSize'), tr('fontSizeHint')) +
       '<div class="sheet-list">' + rows + '</div>', {
       onMount: function (root) {
         $all('[data-zoom]', root).forEach(function (el) {
           el.addEventListener('click', function () {
             var value = parseInt(el.getAttribute('data-zoom'), 10);
             var ok = nativeCall('setTextZoom', String(value));
-            if (ok === null || ok === false) { toast('当前环境不支持调整字体'); return; }
+            if (ok === null || ok === false) { toast(tr('fontUnsupported')); return; }
             closeSheet();
             var label = fontLabel(value);
             var v = $('#set-font-value');
             if (v) v.textContent = label;
-            toast('字体大小：' + label);
+            toast(tr('fontSizePrefix') + label);
           });
         });
       }
@@ -1284,39 +1279,39 @@
 
   function renderSettings() {
     if (!dom.settingsBody) return;
-    var connMap = { connecting: '连接中', connected: '已连接', reconnecting: '重连中', offline: '未连接' };
+    var connMap = { connecting: tr('connecting'), connected: tr('connected'), reconnecting: tr('reconnecting'), offline: tr('offline') };
     var base = location.origin;
     var appVersion = nativeCall('appVersion') || '0.1.0';
     var html =
-      '<div class="settings-group"><div class="settings-group-title">连接</div><div class="settings-card">' +
-      '<div class="settings-row"><span class="settings-row-label">服务器</span><span class="settings-row-value">' + esc(base) + '</span></div>' +
-      '<div class="settings-row"><span class="settings-row-label">状态</span><span class="settings-row-value">' + esc(connMap[state.connection] || state.connection) + '</span></div>' +
-      '<button class="settings-row" id="set-reconnect"><span class="settings-row-label" style="color:var(--accent)">重新连接</span><span class="settings-row-value">›</span></button>' +
-      '</div><div class="settings-note">令牌由系统安全存储，不会显示在这里。连接失败时请回到电脑上查看 <span class="settings-row-value" style="display:inline">dsh web</span> 打印的新链接。</div></div>' +
-      '<div class="settings-group"><div class="settings-group-title">显示</div><div class="settings-card">' +
-      '<button class="settings-row" id="set-font"><span class="settings-row-label">字体大小</span><span class="settings-row-value" id="set-font-value">' + esc(fontLabel(currentTextZoom())) + '</span></button>' +
-      '</div><div class="settings-note">字体大小保存在本机，调整后立即生效。</div></div>' +
-      '<div class="settings-group"><div class="settings-group-title">会话</div><div class="settings-card">' +
-      '<button class="settings-row" id="set-refresh"><span class="settings-row-label">立即刷新会话列表</span><span class="settings-row-value">' + state.sessions.length + ' 个</span></button>' +
-      '<button class="settings-row settings-row-danger" id="set-reset"><span class="settings-row-label">更换服务器 / 重新登录</span><span class="settings-row-value">›</span></button>' +
-      '</div><div class="settings-note">重新登录会清除本机保存的地址与令牌，需要重新粘贴 dsh web 的链接。</div></div>' +
-      '<div class="settings-group"><div class="settings-group-title">关于</div><div class="settings-card">' +
+      ('<div class="settings-group"><div class="settings-group-title">' + esc(tr('connection')) + '</div><div class="settings-card">') +
+      ('<div class="settings-row"><span class="settings-row-label">' + esc(tr('server')) + '</span><span class="settings-row-value">') + esc(base) + '</span></div>' +
+      ('<div class="settings-row"><span class="settings-row-label">' + esc(tr('status')) + '</span><span class="settings-row-value">') + esc(connMap[state.connection] || state.connection) + '</span></div>' +
+      ('<button class="settings-row" id="set-reconnect"><span class="settings-row-label" style="color:var(--accent)">' + esc(tr('reconnect')) + '</span><span class="settings-row-value">›</span></button>') +
+      ('</div><div class="settings-note">' + esc(tr('tokenNotice')) + '</div></div>') +
+      ('<div class="settings-group"><div class="settings-group-title">' + esc(tr('display')) + '</div><div class="settings-card">') +
+      ('<button class="settings-row" id="set-font"><span class="settings-row-label">' + esc(tr('fontSize')) + '</span><span class="settings-row-value" id="set-font-value">') + esc(fontLabel(currentTextZoom())) + '</span></button>' +
+      ('</div><div class="settings-note">' + esc(tr('fontSavedLocally')) + '</div></div>') +
+      ('<div class="settings-group"><div class="settings-group-title">' + esc(tr('sessions')) + '</div><div class="settings-card">') +
+      ('<button class="settings-row" id="set-refresh"><span class="settings-row-label">' + esc(tr('refreshSessions')) + '</span><span class="settings-row-value">') + state.sessions.length + (esc(tr('sessionCountSuffix')) + '</span></button>') +
+      ('<button class="settings-row settings-row-danger" id="set-reset"><span class="settings-row-label">' + esc(tr('changeServer')) + '</span><span class="settings-row-value">›</span></button>') +
+      ('</div><div class="settings-note">' + esc(tr('loginAgainHint')) + '</div></div>') +
+      ('<div class="settings-group"><div class="settings-group-title">' + esc(tr('about')) + '</div><div class="settings-card">') +
       '<div class="settings-row"><span class="settings-row-label">DSH Mobile</span><span class="settings-row-value">' + esc(appVersion) + '</span></div>' +
       '<div class="settings-row"><span class="settings-row-label">DeepSeek Harness</span><span class="settings-row-value">0.2.1-rc.2</span></div>' +
-      '</div><div class="settings-about">为 DeepSeek Harness 打造的轻量 Android 客户端<br>会话、流式回复与工具调用状态</div></div>';
+      ('</div><div class="settings-about">' + esc(tr('aboutClient')) + '<br>' + esc(tr('aboutFeatures')) + '</div></div>');
     dom.settingsBody.innerHTML = html;
     var reconnect = $('#set-reconnect');
     if (reconnect) reconnect.addEventListener('click', function () {
-      if (state.client) { try { state.client.connect(); } catch (e) {} toast('正在重新连接…'); }
+      if (state.client) { try { state.client.connect(); } catch (e) {} toast(tr('reconnectingToast')); }
     });
     var font = $('#set-font');
     if (font) font.addEventListener('click', openFontSheet);
     var refresh = $('#set-refresh');
-    if (refresh) refresh.addEventListener('click', function () { loadSessions(); toast('正在刷新…'); });
+    if (refresh) refresh.addEventListener('click', function () { loadSessions(); toast(tr('refreshing')); });
     var reset = $('#set-reset');
     if (reset) reset.addEventListener('click', function () {
       var ok = nativeCall('reset');
-      if (ok === null) toast('请在 App 中操作');
+      if (ok === null) toast(tr('useApp'));
     });
   }
 
@@ -1362,13 +1357,13 @@
   }
 
   function showAuthExpired(err) {
-    openSheet(sheetHeader('连接已失效', '令牌可能已经过期，或服务器地址已变更。请重新粘贴 dsh web 打印的链接。') +
-      '<div class="dialog-actions"><button class="btn btn-ghost" id="auth-retry">重试</button><button class="btn btn-primary" id="auth-reset">重新登录</button></div>', {
+    openSheet(sheetHeader(tr('authExpired'), tr('authExpiredHint')) +
+      ('<div class="dialog-actions"><button class="btn btn-ghost" id="auth-retry">' + esc(tr('retry')) + '</button><button class="btn btn-primary" id="auth-reset">' + esc(tr('loginAgain')) + '</button></div>'), {
       onMount: function (root) {
         $('#auth-retry', root).addEventListener('click', function () { closeSheet(); if (state.client) { try { state.client.connect(); } catch (e) {} } });
         $('#auth-reset', root).addEventListener('click', function () {
           closeSheet();
-          if (nativeCall('reset') === null) toast('请在 App 中重新登录');
+          if (nativeCall('reset') === null) toast(tr('loginAgainInApp'));
         });
       }
     });

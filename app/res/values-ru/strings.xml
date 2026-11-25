@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DSH</string>
+    <string name="connecting" formatted="false">"Подключение к серверу…"</string>
+    <string name="switched_to_tailscale" formatted="false">"Локальный сервер недоступен. Подключено через Tailscale"</string>
+    <string name="connection_failed" formatted="false">"Не удалось подключиться"</string>
+    <string name="primary_failed" formatted="false">"Не удалось подключиться к локальному серверу. "</string>
+    <string name="fallback_failed" formatted="false">"\n\nНе удалось подключиться через Tailscale. "</string>
+    <string name="token_hint" formatted="false">"\nТокен указан в выводе dsh web в терминале. После перезапуска dsh web токен меняется."</string>
+    <string name="loading_ui" formatted="false">"Загрузка интерфейса…"</string>
+    <string name="bundled_ui_missing" formatted="false">"Встроенный интерфейс отсутствует. "</string>
+    <string name="setup_subtitle" formatted="false">"Подключитесь к своему серверу DSH"</string>
+    <string name="primary_hint" formatted="false">"http://192.168.1.10:3080 или https://&lt;machine&gt;.&lt;tailnet&gt;.ts.net:3080/?token=…"</string>
+    <string name="primary_label" formatted="false">"Локальный адрес"</string>
+    <string name="fallback_hint" formatted="false">"Необязательно. https://&lt;machine&gt;.&lt;tailnet&gt;.ts.net:3080"</string>
+    <string name="fallback_label" formatted="false">"Адрес Tailscale (необязательно)"</string>
+    <string name="token_placeholder" formatted="false">"Вставьте токен — часть ссылки после ?token="</string>
+    <string name="token_label" formatted="false">"Токен"</string>
+    <string name="setup_hint" formatted="false">"Основной адрес — локальный, например http://192.168.1.10:3080. Можно также указать адрес Tailscale, например https://&lt;machine&gt;.&lt;tailnet&gt;.ts.net:3080. Если локальный адрес недоступен, приложение подключится через Tailscale. Токен извлекается из ссылки автоматически."</string>
+    <string name="storage_notice" formatted="false">"Токен хранится только на устройстве в SharedPreferences. Для входа интерфейс использует cookie, полученные приложением."</string>
+    <string name="connect" formatted="false">"Подключиться"</string>
+    <string name="paste" formatted="false">"Вставить"</string>
+    <string name="clipboard_empty" formatted="false">"Буфер обмена пуст"</string>
+    <string name="connection_pasted" formatted="false">"Адрес сервера и токен извлечены из ссылки"</string>
+    <string name="paste_failed" formatted="false">"Не удалось вставить. "</string>
+    <string name="connecting_to" formatted="false">"Подключение к "</string>
+    <string name="fallback_prefix" formatted="false">" (резервный адрес "</string>
+    <string name="connecting_busy" formatted="false">"Подключение…"</string>
+    <string name="open_link_failed" formatted="false">"Не удалось открыть ссылку"</string>
+    <string name="fallback_switched" formatted="false">"Подключено через Tailscale"</string>
+    <string name="fallback_unavailable" formatted="false">"Адрес Tailscale недоступен. Проверьте, что выполнен вход в Tailscale и соединение включено"</string>
+    <string name="server_required" formatted="false">"Введите адрес сервера"</string>
+    <string name="token_required_hint" formatted="false">"Введите токен из вывода dsh web в терминале"</string>
+    <string name="http_required" formatted="false">"Поддерживаются только адреса http:// и https://"</string>
+    <string name="invalid_server_url" formatted="false">"Неверный адрес сервера"</string>
+    <string name="invalid_server_url_detail" formatted="false">"Неверный адрес сервера. "</string>
+    <string name="token_required" formatted="false">"Введите токен"</string>
+    <string name="token_rejected" formatted="false">"Токен недействителен или истёк (HTTP "</string>
+    <string name="http_server_error" formatted="false">"Ошибка сервера HTTP "</string>
+    <string name="no_auth_cookie" formatted="false">"Сервер не вернул cookie для входа (HTTP "</string>
+    <string name="cookie_rejected" formatted="false">"Токен недействителен или истёк (HTTP "</string>
+    <string name="http_session_error" formatted="false">"Не удалось проверить сеанс, HTTP "</string>
+    <string name="invalid_session_response" formatted="false">"Неожиданный ответ API session/list"</string>
+    <string name="verify_failed" formatted="false">"Не удалось проверить сеанс. "</string>
+    <string name="connection_timeout" formatted="false">"Время ожидания ответа сервера истекло"</string>
+    <string name="cannot_connect" formatted="false">"Не удалось подключиться к серверу. Проверьте адрес и сеть"</string>
+    <string name="unknown_host" formatted="false">"Не удалось определить адрес сервера"</string>
+    <string name="network_error" formatted="false">"Ошибка сети. "</string>
+    <string name="notification_channel" formatted="false">"Задачи DSH"</string>
+    <string name="notification_description" formatted="false">"Уведомления о завершении и ошибках задач DeepSeek Harness"</string>
+    <string name="fallback_close" formatted="false">")"</string>
+    <string name="verifying_session" formatted="false">"…\nПроверка токена и API сеансов…"</string>
+    <string name="server_error_suffix" formatted="false">""</string>
+    <string name="session_error_suffix" formatted="false">""</string>
+    <string name="auth_cookie_suffix" formatted="false">"). Проверьте, что токен актуален."</string>
+</resources>

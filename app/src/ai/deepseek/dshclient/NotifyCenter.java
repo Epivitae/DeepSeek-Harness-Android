@@ -34,8 +34,8 @@ public final class NotifyCenter {
             if (nm == null) return;
             if (nm.getNotificationChannel(CHANNEL_ID) != null) return;
             NotificationChannel ch = new NotificationChannel(CHANNEL_ID,
-                    "DSH 任务通知", NotificationManager.IMPORTANCE_DEFAULT);
-            ch.setDescription("DeepSeek Harness 任务完成 / 失败提醒");
+                    ctx.getString(R.string.notification_channel), NotificationManager.IMPORTANCE_DEFAULT);
+            ch.setDescription(ctx.getString(R.string.notification_description));
             ch.enableVibration(true);
             nm.createNotificationChannel(ch);
         } catch (Exception e) {

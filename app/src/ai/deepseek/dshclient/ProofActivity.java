@@ -145,7 +145,7 @@ public class ProofActivity extends Activity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                final ServerAuth.Result result = ServerAuth.login(server, token);
+                final ServerAuth.Result result = ServerAuth.login(ProofActivity.this, server, token);
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
